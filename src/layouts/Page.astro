@@ -1,0 +1,21 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  lang?: string;
+  dir?: 'rtl' | 'ltr';
+}
+
+const { title, description, image, noindex, lang, dir } = Astro.props;
+---
+
+<Base title={title} description={description} image={image} noindex={noindex} lang={lang} dir={dir}>
+  <slot name="head" slot="head" />
+  <div class="page-container py-8">
+    <slot />
+  </div>
+</Base>

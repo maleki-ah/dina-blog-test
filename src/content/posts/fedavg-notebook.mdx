@@ -1,0 +1,64 @@
+---
+title: Federated Averaging in Five Lines
+date: 2026-10-09
+description: A notebook-style walkthrough of the FedAvg update rule with executable-looking cells.
+tags: [federated-learning, jupyter, python]
+categories: [research]
+lang: en
+authors: [fatemeh-kerdegari]
+toc: true
+refs: [research-vectors]
+---
+
+import JupyterNotebook from '../../components/JupyterNotebook.astro';
+
+Federated averaging (FedAvg) aggregates client updates weighted by sample count. The cell below states the rule; the next ones simulate one round in plain Python.
+
+<JupyterNotebook
+  language="python"
+  cells={[
+    {
+      cell_type: 'markdown',
+      source: [
+        '<h3>FedAvg round</h3><p>Each client trains locally, then the server averages the weights.</p>',
+      ],
+    },
+    {
+      cell_type: 'code',
+      execution_count: 1,
+      source: [
+        'clients = {"a": (120, 0.42), "b": (80, 0.51), "c": (200, 0.38)}\n',
+        '# (samples, local loss) per client\n',
+        'total = sum(n for n, _ in clients.values())\n',
+        'global_loss = sum(n / total * loss for n, loss in clients.values())\n',
+        'global_loss',
+      ],
+      outputs: [
+        {
+          output_type: 'execute_result',
+          execution_count: 1,
+          data: { 'text/plain': ['0.42199999999999993'] },
+        },
+      ],
+    },
+    {
+      cell_type: 'code',
+      execution_count: 2,
+      source: ['print(f"clients={len(clients)} total_samples={total}")'],
+      outputs: [
+        {
+          output_type: 'stream',
+          text: ['clients=3 total_samples=400\n'],
+        },
+      ],
+    },
+    {
+      cell_type: 'code',
+      execution_count: null,
+      source: ['# weighted average = sum(n_k / n * w_k)  — see the research vectors post'],
+      outputs: [],
+    },
+  ]}
+/>
+
+Cells render with `In [N]:` / `Out [N]:` prompts, build-time syntax highlighting and formatted outputs — no Python runtime needed. Real `.ipynb` files are not imported; authors transcribe the cells they want to show.

@@ -1,0 +1,13 @@
+# Co-author display name overrides.
+# Maps last names (or full names) to a display record.
+# Used by the publications page to linkify author names.
+#
+# Keys can be:
+#   LastName               - matches any author with this last name
+#   First Last             - exact full name match (use quotes if needed)
+#   "First M. Last"        - quoted exact match
+#
+# Each entry may have:
+#   url          - author's personal website or profile
+#   scholar      - Google Scholar user ID
+#   orcid        - ORCID iD
