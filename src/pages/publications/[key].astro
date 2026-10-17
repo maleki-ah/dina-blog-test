@@ -154,7 +154,13 @@ const breadcrumbLd = {
 };
 ---
 
-<Page title={title} description={abstract ?? `${title} by ${authorsRaw}`} lang="en" dir="ltr">
+<Page
+  title={title}
+  description={abstract ?? `${title} by ${authorsRaw}`}
+  lang="en"
+  dir="ltr"
+  contentDir={pubDir}
+>
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
@@ -424,32 +430,14 @@ const breadcrumbLd = {
   </div>
 </Page>
 
-<!-- Citation copy button (injected — keeps the BibTeX block selectable) -->
+<!-- Citation copy button (shared helper keeps it pinned above the block) -->
 <script>
-  function addCitationCopyButton() {
+  import { addCopyButton } from '@utils/copy-buttons';
+
+  document.addEventListener('astro:page-load', () => {
     const pre = document.getElementById('citation-block');
-    if (!pre || pre.querySelector('.copy-btn')) return;
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.setAttribute('aria-label', 'Copy citation');
-    btn.textContent = 'copy';
-    btn.addEventListener('click', async () => {
-      const code = pre.querySelector('code');
-      if (!code) return;
-      try {
-        await navigator.clipboard.writeText(code.innerText);
-      } catch {
-        return;
-      }
-      btn.textContent = 'copied!';
-      setTimeout(() => {
-        btn.textContent = 'copy';
-      }, 2000);
-    });
-    if (pre instanceof HTMLElement) pre.style.position = 'relative';
-    pre.appendChild(btn);
-  }
-  document.addEventListener('astro:page-load', addCitationCopyButton);
+    if (pre) addCopyButton(pre, 'Copy citation');
+  });
 </script>
 
 <style>

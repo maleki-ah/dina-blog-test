@@ -200,6 +200,15 @@ placeholder, skip-link, back-to-top, copy buttons, and newsletter texts.
 and `Distill.astro` pass the post language down automatically. The navbar language switcher links the default
 language to the clean URL and other languages via `?lang=`.
 
+A mirrored page puts the floating back-to-top button in the bottom-left
+corner instead of the bottom-right one. The button follows the **content**
+direction, not the chrome: posts and publication detail pages set
+`contentDir` on `<Base>` (→ `data-content-dir` on `<body>`), so a Persian post
+stays left-aligned even with English chrome, and an English post stays on the
+right under Persian chrome. Pages with no single content zone (blog listing,
+publications list, members, home) omit the attribute and follow the page
+direction. See the `#back-to-top` rules in `global.css`.
+
 ### Content language vs. site language (hard rule)
 
 Content zones are monolingual and NEVER follow the site language switch —
@@ -222,11 +231,30 @@ they render as if the site were in their own language:
   translates them. Only the index page's own chrome — page title, search box,
   result counts, "no results" — follows the site language via the
   `lab-lang-change` listener in `BibSearch`.
-- **Code blocks**: the injected copy button is never translated — it always reads
-  `copy` / `copied!`, because code stays LTR in every language.
+- **Code blocks**: the copy button is never translated — it always reads
+  `copy` / `copied!`. It is injected into a `.code-frame` wrapper placed
+  *around* the `<pre>` (shared helper: `src/utils/copy-buttons.ts`), never
+  inside it: a `<pre>` scrolls horizontally, and a child of a scroller travels
+  with the content — the button used to slide away and land in the middle of
+  the code on narrow screens. The frame does not scroll, so the button stays
+  pinned to its top-right corner.
 - **Switchable chrome only**: navbar, footer, blog hero, tag/archive headers,
   pagination, search palette, and the whole members page keep `data-i18n*` and
   follow the switcher. Never put `data-i18n*` on content-zone strings.
+
+### Responsive density (mobile-only adjustments)
+
+Two rules exist purely to keep a phone screen free of dead space. Both are
+scoped below the desktop/tablet layout and change nothing from 640px up:
+
+- **Member cards** (`global.css`): the reserved name / chip-row heights that
+  keep a desktop grid row perfectly uniform are dropped below 640px (the grid
+  is single-column there, so nothing needs to line up). The bio keeps its
+  three-line clamp. The card's own padding, avatar ring and social buttons are
+  retuned in `PersonCard.astro` (bigger ~40px touch targets).
+- **Publication cards**: when a card with a `preview` image stacks at ≤640px,
+  the image is capped at 280px and centred (`align-self: center`) instead of
+  hugging the start edge.
 
 ### Cross-references between posts
 
@@ -344,7 +372,8 @@ import JupyterNotebook from '../../components/JupyterNotebook.astro';
 | `notebookHref` | Always root-relative (`/assets/notebooks/…`) — the base path (`/blog`) is prepended automatically |
 
 All code inputs and text outputs are always LTR and left-aligned (even in
-Persian posts) and get an automatic copy button pinned to the right side.
+Persian posts) and get an automatic copy button pinned to the top-right corner
+of a non-scrolling frame, so it stays put while the code scrolls sideways.
 
 ### Per-post CDN widgets
 

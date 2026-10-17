@@ -850,6 +850,10 @@
     padding: 0;
     margin-top: 0;
     display: grid;
+    /* `minmax(0, 1fr)` instead of the implicit `auto` track: an auto track is
+       sized by the widest item's min-content, so a long title/clamped line
+       pushed the whole grid (and the page) wider than a phone screen. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
   }
   .publications ol.bibliography li {
@@ -864,6 +868,7 @@
     /* Uniform height: short cards stretch, buttons pin to the bottom. */
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 13.5rem;
     transition:
       transform 0.2s ease,
@@ -941,6 +946,9 @@
       flex: none;
       width: 100%;
       max-width: 280px;
+      /* Stacked above the text: `align-self` keeps the capped image centred
+         instead of hugging the start edge of the column. */
+      align-self: center;
     }
     .publications ol.bibliography li .pub-thumb img {
       height: 180px;
@@ -1277,7 +1285,7 @@ body[data-footer-position='sticky'] {
 #back-to-top {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  right: 30px; /* end side of an LTR page */
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1290,6 +1298,24 @@ body[data-footer-position='sticky'] {
   background: var(--global-back-to-top-bg-color);
   color: var(--global-back-to-top-text-color);
   transition: opacity 0.2s ease;
+}
+
+/* A mirrored page puts the floating button in the opposite (left) corner.
+   The CONTENT direction wins over the chrome direction: a Persian post keeps
+   the button on the left even when the site chrome is switched to English,
+   and an English post keeps it on the right under Persian chrome. Pages
+   without a single content zone (listings, members…) omit `data-content-dir`
+   and simply follow the page direction. Both offsets are always set
+   explicitly — never an over-constrained left/right pair. */
+html[dir='rtl'] #back-to-top,
+body[data-content-dir='rtl'] #back-to-top {
+  right: auto;
+  left: 30px;
+}
+
+body[data-content-dir='ltr'] #back-to-top {
+  right: 30px;
+  left: auto;
 }
 
 #back-to-top.visible {
@@ -1451,6 +1477,21 @@ html:not([data-theme='dark']) .cursor-glow {
   height: 1rem;
 }
 
+/* Phones: the card spans the full width, so the icon buttons have room to
+   become comfortable touch targets (~40px). */
+@media (max-width: 640px) {
+  .person-socials a {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+  }
+
+  .person-socials svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+}
+
 /* ─── Member deep-link anchors (post author links land here) ─────────────── */
 
 /* Offset for the fixed navbar so the targeted card isn't hidden beneath it. */
@@ -1519,6 +1560,19 @@ html:not([data-theme='dark']) .cursor-glow {
   line-clamp: 3;
   min-height: 3.96rem;
   overflow: hidden;
+}
+
+/* Phones render the cards in a single column, so nothing has to line up with a
+   neighbour: the reserved name / chip rows only add empty glass. Drop the
+   reservations there (the bio keeps its three-line clamp). `639.98px` matches
+   the grid's own 640px boundary — from 640px up the row goes multi-column and
+   the reservations are needed again. */
+@media (max-width: 639.98px) {
+  .member-card:not(.is-horizontal) .member-name,
+  .member-card:not(.is-horizontal) .member-focus,
+  .member-card .member-bio {
+    min-height: 0;
+  }
 }
 
 /* ─── Bilingual people cards (one language visible at a time) ────────────── */
@@ -2074,8 +2128,15 @@ article[dir='ltr'] .prose,
 }
 
 /* ─── Code copy button (injected via JS on posts + citation blocks) ───────── */
-/* The button is always pinned to the top-right: code stays LTR in every
-   language, so a fixed position avoids visual confusion. */
+/* The button lives in a `.code-frame` wrapper AROUND the <pre>, never inside
+   it: a horizontal scroll moves every descendant of the scroller, so a button
+   inside the <pre> slid away with the code on narrow screens. The frame does
+   not scroll, so the button stays pinned to its top-right corner (code always
+   stays LTR, in both page directions). */
+
+.code-frame {
+  position: relative;
+}
 
 .copy-btn {
   position: absolute;

@@ -10,8 +10,8 @@ github: AliAhmadi-Software
 linkedin: https://www.linkedin.com/in/ali-ahmadi-79ah/
 focus:
   - LLM
-  - Federated Learning
   - FedLLM
+  - Federated Learning
   - Distributed Systems
 importance: 2
 group: current

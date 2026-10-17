@@ -10,8 +10,8 @@ github: hessam-kk
 linkedin: https://www.linkedin.com/in/hessam-koucheki-8818b8207/
 focus:
   - LLM
-  - Federated Learning
   - FedLLM
+  - Federated Learning
   - Edge Computing
 importance: 3
 group: current

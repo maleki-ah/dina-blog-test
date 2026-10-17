@@ -229,11 +229,48 @@ const focus = person.data.focus ?? [];
     min-width: 0;
   }
 
+  /* Phones: the card spans the full width, so the vertical rhythm is trimmed
+     (padding, avatar ring, gaps around the chip block) to remove the empty
+     glass around the content. */
   @media (max-width: 640px) {
+    .member-inner {
+      padding: 1rem 0.95rem 0.9rem;
+    }
+
+    .member-avatar-ring {
+      width: 84px;
+      height: 84px;
+      margin-bottom: 0.7rem;
+    }
+
+    .member-initial {
+      font-size: 1.75rem;
+    }
+
+    .member-focus {
+      gap: 0.28rem;
+      margin-top: 0.6rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .focus-chip {
+      padding: 0.16rem 0.5rem;
+    }
+
+    .member-bio {
+      margin-top: 0.55rem;
+    }
+
     .member-card.is-horizontal .member-inner {
       flex-direction: column;
       text-align: center;
-      padding: 1.5rem 1.25rem;
+      padding: 1.1rem 1rem 1rem;
+    }
+
+    .member-card.is-horizontal .member-avatar-ring {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 0.7rem;
     }
 
     .member-card.is-horizontal .member-focus,

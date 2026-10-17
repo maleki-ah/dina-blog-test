@@ -23,6 +23,13 @@ interface Props {
   lang?: string;
   /** Text direction. Derived from lang when omitted. */
   dir?: 'rtl' | 'ltr';
+  /**
+   * Direction of this page's single content zone (post / publication entry).
+   * Only set by pages whose body has one content language; the floating
+   * back-to-top button follows it, so an English post keeps its own corner
+   * even while the site chrome is Persian. Omit for mixed pages.
+   */
+  contentDir?: 'rtl' | 'ltr';
 }
 
 const {
@@ -34,6 +41,7 @@ const {
   isHome = false,
   lang = site.i18n.defaultLang,
   dir = lang === 'fa' ? 'rtl' : 'ltr',
+  contentDir,
 } = Astro.props;
 
 const pageTitle = title === site.author.name ? title : `${title} | ${site.author.name}`;
@@ -234,6 +242,7 @@ const personJsonLd = isHome ? JSON.stringify({
     style="padding-top: var(--navbar-height);"
     data-footer-position={site.footer.position}
     data-tooltips={site.features.tooltips ? 'true' : undefined}
+    data-content-dir={contentDir}
   >
     <!-- Skip to main content (accessibility) -->
     <a

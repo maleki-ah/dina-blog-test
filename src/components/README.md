@@ -20,8 +20,8 @@ zone itself (`dir` plus an explicit `text-align`) because `text-align` inherits 
 
 | Component     | Purpose                                                                      |
 | ------------- | ---------------------------------------------------------------------------- |
-| `Base.astro`  | Root HTML shell: `<head>`, meta/OG, dark mode, View Transitions, global scripts. Props: `title`, `description`, `image`, `noindex`, `robots`, `isHome`, `lang`, `dir`. Named slot: `head`. |
-| `Page.astro`  | `Base` plus a centred `.page-container`. Props: same as `Base` (pass `dir` only for wholly English-only pages). |
+| `Base.astro`  | Root HTML shell: `<head>`, meta/OG, dark mode, View Transitions, global scripts. Props: `title`, `description`, `image`, `noindex`, `robots`, `isHome`, `lang`, `dir`, `contentDir`. Named slot: `head`. |
+| `Page.astro`  | `Base` plus a centred `.page-container`. Props: same as `Base` (pass `dir` only for wholly English-only pages; `contentDir` when the page holds one content zone — it moves the back-to-top button). |
 | `Post.astro`  | Blog post: breadcrumb, hero banner, byline, TOC sidebar, body, refs, related posts, share, comments. Props: `post`, `headings`. Renders in the post's language. |
 | `Distill.astro` | Distill-style article layout with its own TOC and typography. Props: `post`, `headings`. |
 
