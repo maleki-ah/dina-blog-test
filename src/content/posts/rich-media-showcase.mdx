@@ -1,0 +1,69 @@
+---
+title: Rich Media in DINA Posts
+date: 2026-10-12
+description: A live reference for the lab writing toolkit — video embeds, captioned figures and tabbed panels.
+tags: [writing, components]
+categories: [lab]
+lang: en
+authors: [amirhossein-maleki]
+toc: true
+---
+
+import Figure from '../../components/Figure.astro';
+import Tabs from '../../components/Tabs.astro';
+import VideoEmbed from '../../components/VideoEmbed.astro';
+
+Most DINA posts are plain Markdown, which keeps writing fast. When a post needs more, it becomes an `.mdx` file and can use the lab's writing components. This page is the live reference: everything below is exactly what an author writes.
+
+## Video embeds
+
+Talk recordings, demos and lectures are embedded with one line. The component turns a YouTube or Vimeo link into a responsive, lazy-loaded player, and keeps it LTR so it sits correctly inside Persian posts too.
+
+<VideoEmbed
+  src="https://www.youtube.com/watch?v=aircAruvnKk"
+  title="But what is a neural network?"
+  caption="Any YouTube, Vimeo or direct MP4 link works — replace the src to embed a DINA Talks recording."
+/>
+
+## Captioned figures
+
+<Figure
+  path="/assets/img/sample-federated.svg"
+  alt="Federated learning topology"
+  caption="Figure 1. A federated topology from our research vectors. Click to zoom."
+/>
+
+Figures are zoomable by default, accept a caption and alt text, and take custom classes. Set `zoomable={false}` for small inline images such as icons and logos.
+
+## Tabbed panels
+
+<Tabs tabs={['FedAvg (Python)', 'Run it (Bash)']} id="rich-media-tabs">
+  <div slot="tab-0">
+
+```python
+def fedavg(client_weights: list[list[float]], samples: list[int]) -> list[float]:
+    """Weighted average of client models, weighted by sample count."""
+    total = sum(samples)
+    return [
+        sum(n / total * w for n, w in zip(samples, dim))
+        for dim in zip(*client_weights)
+    ]
+```
+
+  </div>
+  <div slot="tab-1">
+
+```bash
+python -m dina.fedavg --rounds 5 --clients 20 --dataset cifar10
+```
+
+  </div>
+</Tabs>
+
+Tabs keep alternative snippets side by side instead of stacking them, and each panel keeps the normal code-block styling and copy button.
+
+## How authors use these
+
+- Write Markdown when a post is prose, math or a notebook.
+- Switch to `.mdx` and import only the components the post needs — unused components are never shipped.
+- Video, figures and tabs all stay in the post's own language and direction, so an English demo works inside the Persian site and the other way around.

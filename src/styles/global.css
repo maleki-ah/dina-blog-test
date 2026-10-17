@@ -4,32 +4,75 @@
 /* KaTeX math CSS — bundled locally so it's always available (no CDN dependency) */
 @import 'katex/dist/katex.min.css';
 
-/* ─── Self-hosted fonts — Inter (Latin), Vazirmatn (Persian), JetBrains Mono (code) ── */
+/* ─── Self-hosted fonts — Manrope (Latin), Space Grotesk (Latin display), Vazirmatn (Persian), JetBrains Mono (code) ── */
 /* font-display: fallback = 100ms block period, then 3s swap window. */
 
-/* Inter 400 */
+/* Manrope 400 */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Manrope';
   font-style: normal;
   font-display: fallback;
   font-weight: 400;
-  src: url('@fontsource/inter/files/inter-latin-400-normal.woff2') format('woff2');
+  src: url('@fontsource/manrope/files/manrope-latin-400-normal.woff2') format('woff2');
 }
-/* Inter 500 */
+/* Manrope 500 */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Manrope';
   font-style: normal;
   font-display: fallback;
   font-weight: 500;
-  src: url('@fontsource/inter/files/inter-latin-500-normal.woff2') format('woff2');
+  src: url('@fontsource/manrope/files/manrope-latin-500-normal.woff2') format('woff2');
 }
-/* Inter 700 */
+/* Manrope 600 */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: fallback;
+  font-weight: 600;
+  src: url('@fontsource/manrope/files/manrope-latin-600-normal.woff2') format('woff2');
+}
+/* Manrope 700 */
+@font-face {
+  font-family: 'Manrope';
   font-style: normal;
   font-display: fallback;
   font-weight: 700;
-  src: url('@fontsource/inter/files/inter-latin-700-normal.woff2') format('woff2');
+  src: url('@fontsource/manrope/files/manrope-latin-700-normal.woff2') format('woff2');
+}
+/* Manrope 800 */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: fallback;
+  font-weight: 800;
+  src: url('@fontsource/manrope/files/manrope-latin-800-normal.woff2') format('woff2');
+}
+/* Space Grotesk 500 */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: fallback;
+  font-weight: 500;
+  src: url('@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2')
+    format('woff2');
+}
+/* Space Grotesk 600 */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: fallback;
+  font-weight: 600;
+  src: url('@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2')
+    format('woff2');
+}
+/* Space Grotesk 700 */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: fallback;
+  font-weight: 700;
+  src: url('@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2')
+    format('woff2');
 }
 /* Vazirmatn 400 (Arabic subset covers Persian) */
 @font-face {
@@ -673,6 +716,27 @@
     margin-bottom: 0;
     padding-top: 0.5rem;
   }
+  /* Pinned cards share one row height: the flex column stretches every column
+     to the tallest card, and the anchor + card fill it (equal-size grid). */
+  .featured-posts .row-cols-2 > *,
+  .featured-posts .row-cols-3 > * {
+    display: flex;
+  }
+  .featured-posts .col > a {
+    display: flex;
+    width: 100%;
+  }
+  .featured-posts .card {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .featured-posts .card-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
 
   /* ─── Bootstrap-style .card (used by featured posts) ────────────── */
   .card {
@@ -768,50 +832,166 @@
     margin-top: 2rem;
   }
   .publications h2.year {
-    color: var(--global-divider-color);
-    border-top: 1px solid var(--global-divider-color);
-    padding-top: 1rem;
-    margin-top: 2rem;
+    color: var(--global-theme-color);
+    border-top: none;
+    border-bottom: 1px solid var(--global-divider-color);
+    padding-top: 0;
+    padding-bottom: 0.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
     text-align: right;
-    font-family: var(--font-sans);
-    font-size: 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
   }
   .publications ol.bibliography {
     list-style: none;
     padding: 0;
     margin-top: 0;
+    display: grid;
+    gap: 1rem;
   }
   .publications ol.bibliography li {
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+    padding: 1.25rem 1.4rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 18px;
+    background-color: color-mix(in srgb, var(--global-card-bg-color) 78%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    /* Uniform height: short cards stretch, buttons pin to the bottom. */
+    display: flex;
+    flex-direction: column;
+    min-height: 13.5rem;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
   }
-  .publications ol.bibliography li .abbr {
-    margin-bottom: 0.5rem;
+  .publications ol.bibliography li:hover {
+    transform: translateY(-3px);
+    border-color: var(--global-theme-color);
+    box-shadow: 0 16px 44px rgba(255, 122, 24, 0.14);
   }
-  .publications ol.bibliography li .abbr abbr {
+  /* Publication card interior: fixed body (never grows when a box opens
+     below) + optional side thumbnail. */
+  .publications ol.bibliography li .pub-entry {
+    display: flex;
+    flex: 0 0 auto;
+    min-height: 11rem;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+  .publications ol.bibliography li .pub-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Meta row — badge + year anchor the top of every card. */
+  .publications ol.bibliography li .pub-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+  }
+  .publications ol.bibliography li .pub-abbr {
     display: inline-block;
-    background-color: var(--global-theme-color);
-    margin-bottom: 0.5rem;
-    color: var(--global-card-bg-color) !important;
-    padding: 0.2em 0.6em;
-    border-radius: 3px;
+    background: linear-gradient(120deg, var(--global-theme-color), var(--global-hover-color));
+    color: #fff;
+    padding: 0.28em 0.9em;
+    border-radius: 999px;
     font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(255, 122, 24, 0.35);
   }
-  .publications ol.bibliography li .abbr abbr a {
-    color: white;
-    text-decoration: none;
+  .publications ol.bibliography li .pub-year {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--global-text-color-light);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+  /* Side thumbnail — fills the entry height so its bottom always aligns
+     with the button row (entry never grows: no stretch-on-open). */
+  .publications ol.bibliography li .pub-thumb {
+    flex: 0 0 170px;
+    min-width: 0;
+    display: flex;
+    align-self: stretch;
+  }
+  .publications ol.bibliography li .pub-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+  @media (max-width: 640px) {
+    .publications ol.bibliography li .pub-entry {
+      flex-direction: column;
+    }
+    .publications ol.bibliography li .pub-thumb {
+      flex: none;
+      width: 100%;
+      max-width: 280px;
+    }
+    .publications ol.bibliography li .pub-thumb img {
+      height: 180px;
+    }
   }
   .publications ol.bibliography li .preview {
     width: 100%;
     height: auto;
     display: block;
+    border-radius: 12px;
+    border: 1px solid var(--global-divider-color);
   }
   .publications ol.bibliography li .title {
+    font-family: var(--font-display);
     font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
     color: var(--global-text-color);
+  }
+  /* Long titles/authors clamp to two lines so the body height (and the
+     thumbnail gap) stays stable; hover reveals the full text.
+     Legacy -webkit-* (all engines) + standard line-clamp (modern). */
+  .publications ol.bibliography li .pub-main .title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .publications ol.bibliography li .pub-main .author {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .publications ol.bibliography li .pub-main .title:hover {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: none;
+  }
+  .publications ol.bibliography li .pub-main .title:focus-within {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: none;
+  }
+  .publications ol.bibliography li .pub-main .author:hover {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: none;
   }
   .publications ol.bibliography li .author {
     color: var(--global-text-color);
@@ -838,54 +1018,87 @@
   .publications ol.bibliography li .links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
+    gap: 0.4rem;
+    /* Pin the button row to the bottom so all cards align. */
+    margin-top: auto;
+    padding-top: 0.75rem;
   }
   .publications ol.bibliography li .links a.btn,
   .publications ol.bibliography li .links button.btn {
     color: var(--global-text-color);
-    border: 1px solid var(--global-text-color);
-    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--global-divider-color);
+    background: color-mix(in srgb, var(--global-theme-color) 7%, transparent);
+    padding: 0.28rem 0.85rem;
     font-size: 0.75rem;
-    font-weight: 400;
-    border-radius: 2px;
+    font-weight: 600;
+    border-radius: 999px;
     text-decoration: none;
     cursor: pointer;
-    background: transparent;
     font-family: inherit;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
   }
   .publications ol.bibliography li .links a.btn:hover,
   .publications ol.bibliography li .links button.btn:hover {
-    color: var(--global-theme-color);
-    border-color: var(--global-theme-color);
+    color: #fff;
+    background: linear-gradient(120deg, var(--global-theme-color), var(--global-hover-color));
+    border-color: transparent;
+    transform: translateY(-1px);
   }
   .publications ol.bibliography li .links a.award.btn,
   .publications ol.bibliography li .links button.award.btn {
     border-color: var(--global-highlight-color, #a00000);
     color: var(--global-highlight-color, #a00000);
   }
-  .publications ol.bibliography li .hidden {
+  .publications ol.bibliography li .pub-hidden {
+    display: block;
     font-size: 0.875rem;
     max-height: 0;
+    opacity: 0;
+    visibility: hidden;
     overflow: hidden;
     text-align: justify;
-    transition: all 0.15s ease;
+    margin-top: 0;
+    transition:
+      max-height 0.35s ease,
+      opacity 0.3s ease,
+      margin-top 0.3s ease,
+      border-color 0.3s ease,
+      visibility 0.3s;
   }
-  .publications ol.bibliography li .hidden.open {
+  .publications ol.bibliography li .pub-hidden.is-open {
     max-height: 100em;
-    transition: all 0.15s ease;
+    opacity: 1;
+    visibility: visible;
+    margin-top: 0.9rem;
   }
-  .publications ol.bibliography li .abstract.hidden {
+  @media (prefers-reduced-motion: reduce) {
+    .publications ol.bibliography li .pub-hidden {
+      transition: none;
+    }
+  }
+  /* Expandable boxes are direct card children: full-width section below the body. */
+  .publications ol.bibliography li > .pub-hidden {
+    width: 100%;
+    border-top: 1px solid transparent;
+  }
+  .publications ol.bibliography li > .pub-hidden.is-open {
+    border-top-color: var(--global-divider-color);
+  }
+  .publications ol.bibliography li .abstract.pub-hidden {
     border: dashed 1px transparent;
   }
-  .publications ol.bibliography li .abstract.hidden.open {
+  .publications ol.bibliography li .abstract.pub-hidden.is-open {
     border-color: var(--global-text-color);
   }
-  .publications ol.bibliography li .hidden p {
+  .publications ol.bibliography li .pub-hidden p {
     line-height: 1.4em;
     margin: 10px;
   }
-  .publications ol.bibliography li .hidden pre {
+  .publications ol.bibliography li .pub-hidden pre {
     font-size: 0.875rem;
     line-height: 1.4em;
     padding: 10px;
@@ -949,11 +1162,19 @@
     border-radius: 4px;
   }
 
-  /* Shiki code blocks */
+  /* Shiki code blocks — soft glass card with a rounded frame. */
   .prose pre {
-    border-radius: 6px;
-    padding: 1rem;
+    position: relative;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
     overflow-x: auto;
+    line-height: 1.6;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+  }
+
+  html[data-theme='dark'] .prose pre {
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
   }
 
   .prose table {
@@ -1230,6 +1451,76 @@ html:not([data-theme='dark']) .cursor-glow {
   height: 1rem;
 }
 
+/* ─── Member deep-link anchors (post author links land here) ─────────────── */
+
+/* Offset for the fixed navbar so the targeted card isn't hidden beneath it. */
+.member-anchor {
+  scroll-margin-top: 84px;
+  border-radius: 18px;
+}
+
+/* Persistent highlight while the anchor hash matches — no JS needed. */
+.member-anchor:target {
+  outline: 2px solid var(--global-theme-color);
+  outline-offset: 6px;
+}
+
+.member-anchor:target .member-card {
+  border-color: var(--global-theme-color);
+  box-shadow:
+    0 0 0 1px var(--global-theme-color),
+    0 18px 50px rgba(255, 122, 24, 0.22);
+}
+
+.member-anchor,
+.member-anchor .member-card {
+  transition:
+    outline-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Uniform member grid: the anchor stretches to the row height and the card
+   fills it, so bios and focus chips of different lengths never produce
+   different-sized cards. Long bios clamp to three lines. */
+.member-anchor {
+  height: 100%;
+}
+
+.member-anchor .member-card {
+  height: 100%;
+}
+
+.member-card:not(.is-horizontal) .member-inner {
+  min-height: 344px;
+}
+
+/* Reserve two name lines so a long display name cannot make one card taller
+   than the rest; an explicit line-height keeps the Latin and Persian blocks
+   on the same rhythm. */
+.member-card:not(.is-horizontal) .member-name {
+  line-height: 1.35;
+  min-height: 2.7rem;
+}
+
+/* Reserve the tallest focus-chip layout and a three-line bio so every card's
+   content block is the same height — the grid row then renders as a clean,
+   uniform matrix in both languages. */
+.member-card:not(.is-horizontal) .member-focus {
+  min-height: 6.4rem;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.member-card .member-bio {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  min-height: 3.96rem;
+  overflow: hidden;
+}
+
 /* ─── Bilingual people cards (one language visible at a time) ────────────── */
 
 html[lang='fa'] .who-en {
@@ -1241,11 +1532,19 @@ html:not([lang='fa']) .who-fa {
 }
 
 /* ─── Directional arrows (mirror in RTL) ─────────────────────────────────── */
+/* The arrow sits inside a content zone on posts (article[dir]) and in the
+   chrome on archive pages. Pin it to the ZONE it belongs to, so an English
+   post keeps its left arrow even while the chrome language is Persian. */
 
 .back-arrow {
   display: inline-block;
 }
 
+article[dir='ltr'] .back-arrow {
+  transform: none;
+}
+
+article[dir='rtl'] .back-arrow,
 [dir='rtl'] .back-arrow {
   transform: scaleX(-1);
 }
@@ -1344,6 +1643,30 @@ html:not([data-theme='dark']) .card.hoverable {
   border-color: var(--global-theme-color);
 }
 
+/* Uniform blog rows: the text block clamps the title and description to two
+   lines and always reserves two description lines, and the visual block is
+   fixed — so cards with long or short copy (or none) line up exactly. */
+.post-list .post-row {
+  min-height: 156px;
+}
+
+.post-list .post-row .post-body > p:not(.post-meta):not(.post-tags) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  min-height: 3.4em;
+  overflow: hidden;
+}
+
+.post-list .post-row .post-body h3 a.post-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
 .card {
   border-radius: 16px;
 }
@@ -1370,6 +1693,8 @@ html:not([data-theme='dark']) .card.hoverable {
 }
 
 .header-bar h1 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
   background: linear-gradient(
     120deg,
     var(--global-theme-color),
@@ -1379,6 +1704,85 @@ html:not([data-theme='dark']) .card.hoverable {
   background-clip: text;
   color: transparent;
   position: relative;
+}
+
+.blog-mark {
+  width: 120px;
+  height: 120px;
+  border-radius: 32px;
+  object-fit: cover;
+  margin: 0 auto 1.25rem;
+  display: block;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 0 0 1px var(--global-divider-color),
+    0 0 0 8px color-mix(in srgb, var(--global-theme-color) 14%, transparent),
+    0 24px 64px rgba(255, 122, 24, 0.35);
+}
+
+/* Blog hero — glass panel with display type and ambient glows. */
+.blog-hero {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 28px;
+  padding: 3rem 1.5rem 2.75rem;
+  margin-top: 1.5rem;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(255, 122, 24, 0.16), transparent 60%),
+    radial-gradient(circle at 88% 110%, rgba(41, 91, 128, 0.14), transparent 55%),
+    color-mix(in srgb, var(--global-card-bg-color) 72%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.blog-hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(226, 182, 87, 0.18), transparent 32%),
+    radial-gradient(circle at 85% 25%, rgba(255, 122, 24, 0.12), transparent 30%);
+}
+
+.blog-hero > *:not(.blog-hero-glow) {
+  position: relative;
+  z-index: 1;
+}
+
+.blog-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.1;
+  margin: 0 0 0.75rem;
+  background: linear-gradient(
+    120deg,
+    var(--global-theme-color),
+    var(--global-hover-color)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.blog-lede {
+  max-width: 44rem;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--global-text-color-light);
+}
+
+/* Persian hero keeps Vazirmatn and looser rhythm. */
+[dir='rtl'] .blog-hero h1,
+[lang='fa'] .blog-hero h1 {
+  font-family: var(--font-fa);
+  letter-spacing: 0;
 }
 
 /* Pill pagination + glass tag badges. */
@@ -1400,6 +1804,19 @@ html:not([data-theme='dark']) .card.hoverable {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
+/* ─── Publications search (shared chrome) ─────────────────────────────────── */
+/* Direction is driven by the <html dir> set pre-paint, so the box is correct
+   on the first frame and never waits for the React island to hydrate. */
+.pub-search {
+  direction: ltr;
+  text-align: left;
+}
+
+[dir='rtl'] .pub-search {
+  direction: rtl;
+  text-align: right;
+}
+
 /* ─── RTL layout support ─────────────────────────────────────────────────── */
 
 [dir='rtl'] .page-container,
@@ -1414,16 +1831,119 @@ html:not([data-theme='dark']) .card.hoverable {
   text-align: right;
 }
 
+/* ─── Content-zone isolation ─────────────────────────────────────────────── */
+/* A content zone (post, card, publication entry) pins BOTH direction and
+   alignment from its own language. text-align inherits straight through dir
+   boundaries, so dir alone cannot isolate a zone — these explicit pins
+   override the page-level rules above for everything inside the zone. */
+
+article[dir='ltr'],
+.post-row[dir='ltr'],
+.pub-entries,
+.featured-posts .card[dir='ltr'],
+.pub-detail {
+  text-align: left;
+}
+
+article[dir='ltr'] .prose,
+article[dir='ltr'] .post-authors,
+article[dir='ltr'] .post-meta,
+article[dir='ltr'] .post-tags,
+.post-list .post-row[dir='ltr'] .post-meta,
+.post-list .post-row[dir='ltr'] .post-tags,
+.post-list .post-row[dir='ltr'] .post-authors {
+  text-align: left;
+}
+
+article[dir='rtl'],
+.post-row[dir='rtl'],
+.featured-posts .card[dir='rtl'] {
+  text-align: right;
+}
+
+article[dir='rtl'] .post-authors,
+article[dir='rtl'] .post-meta,
+article[dir='rtl'] .post-tags {
+  text-align: right;
+}
+
+/* Fonts follow the CONTENT language, not the chrome language.
+   The chrome's language helpers live on <html> ([lang='fa'], [dir='rtl']) and
+   cascade down, so an English post rendered while chrome is Persian would
+   inherit Vazirmatn — and the reverse for a Persian post on English chrome.
+   Each content zone re-pins its own faces (body + headings) at a specificity
+   that beats those ancestor helpers, so a Latin post never shows Vazirmatn
+   and a Persian post never shows the Latin face. */
+
+.page-container[dir='ltr'],
+.distill-page-container[dir='ltr'],
+article[dir='ltr'],
+.post-row[dir='ltr'],
+.featured-posts .card[dir='ltr'],
+.pub-entries,
+.pub-detail {
+  font-family: var(--font-sans);
+}
+
+.page-container[dir='ltr'] :is(h1, h2, h3, h4, h5, h6),
+.distill-page-container[dir='ltr'] :is(h1, h2, h3, h4, h5, h6),
+article[dir='ltr'] :is(h1, h2, h3, h4, h5, h6),
+.post-row[dir='ltr'] :is(h1, h2, h3, h4, h5, h6),
+.featured-posts .card[dir='ltr'] :is(h1, h2, h3, h4, h5, h6),
+.pub-entries :is(h1, h2, h3, h4, h5, h6),
+.pub-detail :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+
+/* The RTL rhythm helpers ([dir='rtl'] body/article/.prose) are ancestor-based
+   and would leak a taller line-height + zero letter-spacing into an English
+   zone on a Persian page — pin the Latin defaults back. */
+article[dir='ltr'],
+article[dir='ltr'] .prose,
+.post-row[dir='ltr'],
+.pub-entries,
+.pub-detail {
+  line-height: 1.7;
+  letter-spacing: normal !important;
+}
+
+/* A Persian publication entry follows its OWN language: Vazirmatn, RTL and
+   right alignment — while the LTR list wrapper around it is untouched. */
+.pub-entries li[lang='fa'] {
+  font-family: var(--font-fa);
+  text-align: right;
+  line-height: 2;
+}
+
+.pub-entries li[lang='fa'] :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-fa);
+  line-height: 1.35;
+}
+
+/* The card title opts into the display face explicitly — pin it back for Persian
+   so it does not silently rely on glyph fallback. */
+.pub-entries li[lang='fa'] .title {
+  font-family: var(--font-fa);
+}
+
+/* A Persian publication DETAIL page follows the entry language too. */
+.pub-detail[dir='rtl'] {
+  font-family: var(--font-fa);
+  text-align: right;
+  line-height: 2;
+}
+
+.pub-detail[dir='rtl'] :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-fa);
+  line-height: 1.35;
+}
+
 /* Tag/category filter rows stay centered in both directions. */
 [dir='rtl'] .tag-category-list,
 [dir='rtl'] .tag-category-list ul,
 [dir='rtl'] .tag-cloud {
   text-align: center;
-}
-
-[dir='rtl'] h2.year,
-[dir='rtl'] .publications h2.year {
-  text-align: left;
 }
 
 /* Keep mixed-direction technical content readable inside RTL. */
@@ -1554,34 +2074,58 @@ html:not([data-theme='dark']) .card.hoverable {
 }
 
 /* ─── Code copy button (injected via JS on posts + citation blocks) ───────── */
+/* The button is always pinned to the top-right: code stays LTR in every
+   language, so a fixed position avoids visual confusion. */
 
 .copy-btn {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  border: none;
+  top: 0.55rem;
+  right: 0.55rem;
+  left: auto;
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--global-divider-color);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s;
-  font-size: 0.7rem;
+  transition:
+    opacity 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   font-family: var(--font-mono, monospace);
-  background-color: var(--global-card-bg-color, #f5f5f5);
+  background-color: color-mix(in srgb, var(--global-card-bg-color, #f5f5f5) 86%, transparent);
   color: var(--global-text-color-light, #888);
   line-height: 1.5;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-pre:hover .copy-btn {
+pre:hover .copy-btn,
+pre:focus-within .copy-btn {
   opacity: 1;
 }
 .copy-btn:hover {
   background-color: var(--global-theme-color);
   color: var(--global-hover-text-color, #fff);
+  border-color: var(--global-theme-color);
+}
+/* Touch/hover-less devices can't reveal the button on hover — keep it shown. */
+@media (hover: none) {
+  .copy-btn {
+    opacity: 1;
+  }
 }
 
-[dir='rtl'] .copy-btn {
-  right: auto;
-  left: 0.5rem;
+/* Every code surface stays LTR + left-aligned in both page directions. */
+pre,
+pre code,
+.jupyter-notebook pre,
+.jupyter-notebook .jupyter-output {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
 }
 
 /* ─── Mermaid diagrams ───────────────────────────────────────────────────── */

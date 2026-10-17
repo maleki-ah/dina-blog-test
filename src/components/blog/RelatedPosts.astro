@@ -1,6 +1,6 @@
 ---
 import { site } from '@config/site';
-import { formatPostDate, t } from '@utils/i18n';
+import { formatPostDate, normalizeLang, t } from '@utils/i18n';
 import type { CollectionEntry } from 'astro:content';
 
 import IconCalendar from '~icons/fa-solid/calendar';
@@ -12,18 +12,24 @@ interface Props {
 
 const { posts, lang = 'en' } = Astro.props;
 if (posts.length === 0) return;
+
+// Content zone: the section and its cards follow the post language, not the
+// site chrome language. Each card additionally follows its OWN post language.
+const sectionDir = lang === 'fa' ? 'rtl' : 'ltr';
 ---
 
-<section class="related-posts">
-  <h3 data-i18n="relatedTitle">{t(lang, 'relatedTitle')}</h3>
-  <p class="related-subtitle" data-i18n="relatedSubtitle">{t(lang, 'relatedSubtitle')}</p>
+<section class="related-posts" lang={lang} dir={sectionDir}>
+  <h3>{t(lang, 'relatedTitle')}</h3>
+  <p class="related-subtitle">{t(lang, 'relatedSubtitle')}</p>
 
   <ul class="related-list">
     {
       posts.map((post) => {
-        const date = formatPostDate(post.data.date, lang);
+        // Each related card follows its OWN post language.
+        const itemLang = normalizeLang((post.data as { lang?: string }).lang ?? lang);
+        const date = formatPostDate(post.data.date, itemLang);
         return (
-          <li class="related-item">
+          <li class="related-item" lang={itemLang} dir={itemLang === 'fa' ? 'rtl' : 'ltr'}>
             <a href={`${site.base}/posts/${post.id}/`} class="related-title">
               {post.data.title}
             </a>

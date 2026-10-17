@@ -63,7 +63,7 @@ const shareLinks = [
 ---
 
 <div class="social-share">
-  <p class="share-label" data-i18n="share">{t(lang, 'share')}</p>
+  <p class="share-label">{t(lang, 'share')}</p>
   <div class="share-icons">
     {
       shareLinks.map(({ name, href, Icon, copyLink }) =>
@@ -133,7 +133,7 @@ const shareLinks = [
   }
 
   // Discord has no web share intent — the button copies the post link instead.
-  document.querySelectorAll<HTMLButtonElement>('.share-copy').forEach((copyBtn) => {
+  document.querySelectorAll('.share-copy').forEach((copyBtn) => {
     copyBtn.addEventListener('click', async () => {
       const link = copyBtn.getAttribute('data-copy-url');
       if (!link) return;

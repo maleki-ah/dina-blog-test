@@ -56,7 +56,7 @@ async function fetchCitationCount(doi: string): Promise<number | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': `as-folio/1.0 (mailto:${POLITE_POOL_EMAIL})`,
+        'User-Agent': `dina-lab-blog/1.0 (mailto:${POLITE_POOL_EMAIL})`,
       },
     });
     if (res.status === 404) return null;

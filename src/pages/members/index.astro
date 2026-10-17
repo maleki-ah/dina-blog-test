@@ -3,6 +3,7 @@ import PersonCard from '@components/PersonCard.astro';
 import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
 import { withBase } from '@utils/base';
+import { personSlug } from '@utils/post-authors';
 import { getCollection } from 'astro:content';
 
 const all = await getCollection('people');
@@ -28,9 +29,11 @@ const alumni = all.filter((p) => p.data.group === 'alumni').sort(byImportance);
         >
           Supervisor
         </h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div class="grid gap-6">
           {supervisors.map((person) => (
-            <PersonCard person={person} lead={true} />
+            <div class="member-anchor" id={personSlug(person.id)}>
+              <PersonCard person={person} lead={true} horizontal={true} />
+            </div>
           ))}
         </div>
       </section>
@@ -49,7 +52,9 @@ const alumni = all.filter((p) => p.data.group === 'alumni').sort(byImportance);
         </h2>
         <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {current.map((person) => (
-            <PersonCard person={person} />
+            <div class="member-anchor" id={personSlug(person.id)}>
+              <PersonCard person={person} />
+            </div>
           ))}
         </div>
       </section>
@@ -68,7 +73,7 @@ const alumni = all.filter((p) => p.data.group === 'alumni').sort(byImportance);
         </h2>
         <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {alumni.map((person) => (
-            <div class="flex items-center gap-3">
+            <div class="member-anchor flex items-center gap-3" id={personSlug(person.id)}>
               {person.data.photo && (
                 <img
                   src={withBase(person.data.photo)}

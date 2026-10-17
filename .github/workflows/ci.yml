@@ -1,6 +1,6 @@
 name: CI
 
-# Students writing posts/news only trigger the fast content check.
+# Students writing posts/people files only trigger the fast content check.
 # Template changes (code, config, styles, deps) run the full gate.
 # Pull requests touching both run everything.
 
@@ -53,9 +53,7 @@ jobs:
               - 'scripts/**'
             content:
               - 'src/content/posts/**'
-              - 'src/content/announcements/**'
               - 'src/content/people/**'
-              - 'src/data/about.mdx'
               - 'src/data/papers.bib'
               - 'public/assets/img/**'
 

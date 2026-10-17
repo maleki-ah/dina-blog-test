@@ -19,7 +19,7 @@ a pull request — pushing to `main` deploys automatically via GitHub Actions.
 ## Features
 
 - **Bilingual EN / فارسی** — per-post `lang` with automatic RTL/LTR, Vazirmatn +
-  Inter typography, and a site-wide language switch (menu, footer, dates, search)
+  Manrope + Space Grotesk typography, and a site-wide language switch (menu, footer, dates, search)
 - **Academic writing** — KaTeX math, Mermaid diagrams, syntax highlighting,
   Jupyter-style notebook cells, image zoom, table of contents, reading progress
 - **Publications** — BibTeX bibliography with clean copyable citations
@@ -57,8 +57,7 @@ Images live next to the post: `public/assets/img/posts/<post-id>/cover.jpg`
 cloned by everyone). Without `image`, the post automatically gets an on-brand
 fallback banner — thumbnails are never empty.
 
-News items go in `src/content/announcements/` (`date` + `pinned: true`
-optional). Member profiles live in `src/content/people/` (English + Persian
+Member profiles live in `src/content/people/` (English + Persian
 name/role/bio blocks). See [CUSTOMIZE.md](CUSTOMIZE.md) for the full reference,
 including BibTeX, Jupyter cells, Mermaid, and the Git branching model.
 
@@ -73,10 +72,10 @@ yarn dev # local preview at http://localhost:4321/blog/
 ```text
 main                  ← production; every push deploys to GitHub Pages
 develop               ← template / design changes; merged into main via PR
-<name>/<slug>         ← one post or news item; PR into main, deleted after merge
+<name>/<slug>         ← one post or member update; PR into main, deleted after merge
 ```
 
-- **Posts & news** branch off `main`. One branch per item. CI runs a fast
+- **Posts & member updates** branch off `main`. One branch per item. CI runs a fast
   content check (frontmatter, authors, references, images) — no full build
   needed. Sync with `main` before opening the PR; delete the branch after merge.
 - **Template / design changes** go through `develop` with the full gate
@@ -92,11 +91,9 @@ src/
 ├── config/site.ts       ← site settings + EN/FA interface strings (start here)
 ├── content/
 │   ├── posts/           ← blog posts (.md / .mdx, en + fa)
-│   ├── people/          ← lab member profiles, bilingual
-│   └── announcements/   ← news items
+│   └── people/          ← lab member profiles, bilingual
 ├── data/
-│   ├── papers.bib       ← BibTeX bibliography
-│   └── about.mdx        ← about page bio (EN + FA blocks)
+│   └── papers.bib       ← BibTeX bibliography
 ├── components/          ← UI (cards, navbar, search, i18n engine, …)
 ├── layouts/             ← Base / Page / Post / Distill
 ├── pages/               ← routes (blog listing at `/`, posts at `/posts/`)
@@ -117,7 +114,7 @@ yarn build             # production build + Pagefind index
 yarn test              # unit tests (Vitest)
 yarn lint              # ESLint (autofix)
 yarn test:types        # astro check + tsc
-yarn content:check     # validate post/news/people frontmatter (fast, for content PRs)
+yarn content:check     # validate post/people frontmatter (fast, for content PRs)
 yarn citations:update  # refresh citation counts from OpenAlex
 ```
 

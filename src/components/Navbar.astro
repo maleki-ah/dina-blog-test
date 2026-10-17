@@ -17,7 +17,17 @@ function isDropdown(item: NavItem): item is NavDropdown {
 // ── Active-state helpers ───────────────────────────────────────────────────
 const pathname = Astro.url.pathname;
 
+/** Absolute URLs (http…) render as external links and are never "active". */
+function isExternalHref(href: string): boolean {
+  return /^https?:\/\//.test(href);
+}
+
+function navHref(href: string): string {
+  return isExternalHref(href) ? href : `${site.base}${href}`;
+}
+
 function isActive(href: string): boolean {
+  if (isExternalHref(href)) return false;
   const full = `${site.base}${href}`;
   if (href === '/') return pathname === full || pathname === site.base;
   return pathname.startsWith(full);
@@ -68,11 +78,13 @@ const { lang = site.i18n.defaultLang } = Astro.props;
         items.map((item) => {
           if (isLeaf(item)) {
             const active = isActive(item.href);
+            const external = isExternalHref(item.href);
             return (
               <a
-                href={`${site.base}${item.href}`}
+                href={navHref(item.href)}
                 class={`px-3 py-1 text-sm transition-colors ${active ? 'font-bold' : ''}`}
                 style={`color: ${active ? 'var(--global-theme-color)' : 'var(--global-text-color)'}; text-decoration: none;`}
+                {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 <span data-i18n={navKey(item.label)}>{navLabel(lang, item.label)}</span>
               </a>
@@ -117,13 +129,17 @@ const { lang = site.i18n.defaultLang } = Astro.props;
                 >
                   {item.children.map((child) => {
                     const childActive = isActive(child.href);
+                    const childExternal = isExternalHref(child.href);
                     return (
                       <li role="none">
                         <a
-                          href={`${site.base}${child.href}`}
+                          href={navHref(child.href)}
                           role="menuitem"
                           tabindex="-1"
                           class={childActive ? 'active' : ''}
+                          {...(childExternal
+                            ? { target: '_blank', rel: 'noopener noreferrer' }
+                            : {})}
                         >
                           <span data-i18n={navKey(child.label)}>{navLabel(lang, child.label)}</span>
                         </a>
@@ -234,11 +250,13 @@ const { lang = site.i18n.defaultLang } = Astro.props;
       items.map((item) => {
         if (isLeaf(item)) {
           const active = isActive(item.href);
+          const external = isExternalHref(item.href);
           return (
             <a
-              href={`${site.base}${item.href}`}
+              href={navHref(item.href)}
               class="block px-4 py-2 text-sm"
               style={`color: ${active ? 'var(--global-theme-color)' : 'var(--global-text-color)'}; font-weight: ${active ? '700' : '400'}; text-decoration: none;`}
+              {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
               <span data-i18n={navKey(item.label)}>{navLabel(lang, item.label)}</span>
             </a>
@@ -275,11 +293,13 @@ const { lang = site.i18n.defaultLang } = Astro.props;
               <div class="mobile-dropdown-children hidden">
                 {item.children.map((child) => {
                   const childActive = isActive(child.href);
+                  const childExternal = isExternalHref(child.href);
                   return (
                     <a
-                      href={`${site.base}${child.href}`}
+                      href={navHref(child.href)}
                       class="block px-8 py-2 text-sm"
                       style={`color: ${childActive ? 'var(--global-theme-color)' : 'var(--global-text-color-light)'}; font-weight: ${childActive ? '700' : '400'}; text-decoration: none;`}
+                      {...(childExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
                       <span data-i18n={navKey(child.label)}>{navLabel(lang, child.label)}</span>
                     </a>

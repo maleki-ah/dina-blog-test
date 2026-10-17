@@ -6,6 +6,8 @@
 import PostCard from '@components/blog/PostCard.astro';
 import Pagination from '@components/Pagination.astro';
 import { site } from '@config/site';
+import { withBase } from '@utils/base';
+import { formatCount, normalizeLang, t } from '@utils/i18n';
 import { readingTime } from '@utils/reading-time';
 import type { CollectionEntry } from 'astro:content';
 
@@ -62,10 +64,20 @@ for (const post of pagePosts) {
 const postYears = [...postsByYear.keys()].sort((a, b) => b - a);
 ---
 
-<!-- Header bar -->
-<div class="header-bar">
+<!-- Header hero -->
+<div class="blog-hero">
+  <div class="blog-hero-glow" aria-hidden="true"></div>
+  <img
+    class="blog-mark"
+    src={withBase('/assets/logo/DINA-logo.png')}
+    alt="DINA Lab logo"
+    width="120"
+    height="120"
+    loading="eager"
+    fetchpriority="high"
+  />
   <h1 data-i18n="blogName">{site.blog.name}</h1>
-  <h2 data-i18n="blogDesc">{site.blog.description}</h2>
+  <p class="blog-lede" data-i18n="blogDesc">{site.blog.description}</p>
 </div>
 
 <!-- Tag / category list + all-tags link -->
@@ -110,10 +122,16 @@ const postYears = [...postsByYear.keys()].sort((a, b) => b - a);
           {pinnedPosts.map((post) => {
             const mins = post.body ? readingTime(post.body, site.blog.wordsPerMinute) : 1;
             const year = post.data.date.getFullYear();
+            // Pinned cards follow their OWN post language, like regular cards.
+            const postLang = normalizeLang((post.data as { lang?: string }).lang);
             return (
               <div class="col mb-4">
                 <a href={`${site.base}/posts/${post.id}/`}>
-                  <div class="card hoverable">
+                  <div
+                    class="card hoverable"
+                    lang={postLang}
+                    dir={postLang === 'fa' ? 'rtl' : 'ltr'}
+                  >
                     <div class="row g-0">
                       <div class="col-md-12">
                         <div class="card-body">
@@ -125,8 +143,8 @@ const postYears = [...postsByYear.keys()].sort((a, b) => b - a);
                             <p class="card-text">{post.data.description}</p>
                           )}
                           <p class="post-meta">
-                            <span data-i18n="minReadN" data-i18n-vars={JSON.stringify({ n: mins })}>
-                              {mins} min read
+                            <span>
+                              {t(postLang, 'minReadN').replace('{n}', formatCount(mins, postLang))}
                             </span>{' '}
                             &nbsp;&middot;&nbsp;
                             <span>

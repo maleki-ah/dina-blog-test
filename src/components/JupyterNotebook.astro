@@ -1,4 +1,5 @@
 ---
+import { withBase } from '@utils/base';
 import { Code } from 'astro:components';
 
 // src/components/JupyterNotebook.astro
@@ -12,6 +13,7 @@ interface Output {
   data?: {
     'text/plain'?: string[];
     'text/html'?: string[];
+    'image/png'?: string[];
   };
   execution_count?: number | null;
 }
@@ -26,9 +28,18 @@ interface Cell {
 interface Props {
   cells: Cell[];
   language?: string;
+  /** Full URL of the runnable notebook (e.g. a Colab link). Renders an action bar. */
+  colabUrl?: string;
+  /** Full URL of a Binder launch for the notebook. Renders an action bar. */
+  binderUrl?: string;
+  /** Base-relative path of a downloadable `.ipynb` file (e.g. `/assets/notebooks/x.ipynb`). */
+  notebookHref?: string;
 }
 
-const { cells, language = 'python' } = Astro.props;
+const { cells, language = 'python', colabUrl, binderUrl, notebookHref } = Astro.props;
+const hasActions = Boolean(colabUrl ?? binderUrl ?? notebookHref);
+// Download links are base-aware; Colab/Binder URLs are absolute and pass through.
+const notebookDownload = notebookHref ? withBase(notebookHref) : undefined;
 
 // Shiki only knows fixed language ids — fall back to python for the rest.
 const KNOWN_CODE_LANGS = new Set([
@@ -71,6 +82,14 @@ function getOutputHtml(output: Output): string | null {
   return null;
 }
 
+// Base64-encoded PNG outputs (display_data / execute_result with image/png).
+function getOutputImage(output: Output): string | null {
+  if (output.data?.['image/png']) {
+    return `data:image/png;base64,${output.data['image/png'].join('').replace(/\s+/g, '')}`;
+  }
+  return null;
+}
+
 // Numbering follows real notebook semantics: prefer the cell's own
 // execution_count, fall back to sequential numbering for cells without one.
 let codeCount = 0;
@@ -84,6 +103,27 @@ const numberedCells = cells.map((cell) => {
 ---
 
 <div class="jupyter-notebook not-prose my-8 font-mono text-sm" dir="ltr" style="text-align: left;">
+  {
+    hasActions && (
+      <div class="jupyter-actions">
+        {colabUrl && (
+          <a href={colabUrl} target="_blank" rel="noopener noreferrer" class="jupyter-action">
+            Open in Colab
+          </a>
+        )}
+        {binderUrl && (
+          <a href={binderUrl} target="_blank" rel="noopener noreferrer" class="jupyter-action">
+            Launch with Binder
+          </a>
+        )}
+        {notebookHref && (
+          <a href={notebookDownload} download class="jupyter-action">
+            Download .ipynb
+          </a>
+        )}
+      </div>
+    )
+  }
   {
     numberedCells.map((cell) => {
       if (cell.cell_type === 'markdown') {
@@ -136,7 +176,19 @@ const numberedCells = cells.map((cell) => {
               <div class="min-w-0 flex-1 overflow-x-auto rounded border-l-4 border-red-300 bg-white py-1 dark:border-red-700 dark:bg-gray-900">
                 {outputs.map((output) => {
                   const html = getOutputHtml(output);
+                  const image = getOutputImage(output);
                   const text = getOutputText(output);
+
+                  if (image) {
+                    return (
+                      <img
+                        class="jupyter-output mx-auto block max-w-full px-3 py-1"
+                        src={image}
+                        alt="Notebook output figure"
+                        loading="lazy"
+                      />
+                    );
+                  }
 
                   if (html) {
                     return <div class="jupyter-output px-3 text-sm" set:html={html} />;
@@ -175,8 +227,49 @@ const numberedCells = cells.map((cell) => {
     background-color: #111827;
   }
 
+  /* Run-online action bar (Colab / Binder / download). */
+  .jupyter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-sans);
+  }
+
+  .jupyter-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--global-theme-color);
+    border: 1px solid var(--global-theme-color);
+    background: color-mix(in srgb, var(--global-theme-color) 8%, transparent);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .jupyter-action:hover {
+    background: var(--global-theme-color);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
   .jupyter-code-cell pre {
     font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+  }
+
+  /* The shared .prose pre card frame targets Markdown fences — notebook cells
+     provide their own chrome, so drop the frame inside the notebook. */
+  .jupyter-notebook pre {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   /* Outputs are always left-aligned LTR, even inside RTL pages. */

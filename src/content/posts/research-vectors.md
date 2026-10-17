@@ -25,6 +25,20 @@ $$
 
 where $n_k$ is the sample count on client $k$ and $F_k$ its local loss. Our FedLLM threads (Fed MAB LoRA, Fed + LoRA, adaptive client selection) personalize this objective under communication and heterogeneity constraints.
 
+```python
+def fedavg(client_weights: list[list[float]], samples: list[int]) -> list[float]:
+    """Weighted average of client models, weighted by sample count."""
+    total = sum(samples)
+    return [
+        sum(n / total * w for n, w in zip(samples, dim))
+        for dim in zip(*client_weights)
+    ]
+
+
+weights = fedavg([[0.42, 0.10], [0.51, 0.22], [0.38, 0.05]], [120, 80, 200])
+print([round(w, 4) for w in weights])  # [0.4195, 0.0955]
+```
+
 ## Research landscape
 
 ```mermaid

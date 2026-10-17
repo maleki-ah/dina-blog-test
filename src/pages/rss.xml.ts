@@ -25,7 +25,7 @@ export async function GET(context: APIContext) {
       site.author.email
         ? `<managingEditor>${site.author.email} (${site.author.name})</managingEditor>`
         : '',
-      `<generator>as-folio (Astro)</generator>`,
+      `<generator>DINA Lab Blog (Astro)</generator>`,
     ]
       .filter(Boolean)
       .join('\n'),

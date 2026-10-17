@@ -18,19 +18,19 @@ import React from 'react';
 import satori from 'satori';
 
 // Load fonts once at module level (build-time only — never runs in the browser)
-const fontRoot = resolve('node_modules/@fontsource/inter/files');
-const fontRegular = readFileSync(resolve(fontRoot, 'inter-latin-400-normal.woff'));
-const fontBold = readFileSync(resolve(fontRoot, 'inter-latin-700-normal.woff'));
+const fontRoot = resolve('node_modules/@fontsource/manrope/files');
+const fontRegular = readFileSync(resolve(fontRoot, 'manrope-latin-400-normal.woff'));
+const fontBold = readFileSync(resolve(fontRoot, 'manrope-latin-700-normal.woff'));
 
 const FONTS = [
   {
-    name: 'Inter',
+    name: 'Manrope',
     data: fontRegular,
     weight: 400 as const,
     style: 'normal' as const,
   },
   {
-    name: 'Inter',
+    name: 'Manrope',
     data: fontBold,
     weight: 700 as const,
     style: 'normal' as const,
@@ -66,7 +66,7 @@ function ogCard(title: string, description: string | undefined, type: string) {
         width: W,
         height: H,
         backgroundColor: '#ffffff',
-        fontFamily: 'Inter',
+        fontFamily: 'Manrope',
         position: 'relative',
         padding: '0',
       },
@@ -172,7 +172,7 @@ function ogCard(title: string, description: string | undefined, type: string) {
               textTransform: 'uppercase',
             },
           },
-          'as-folio',
+          'DINA Lab',
         ),
       ),
     ),

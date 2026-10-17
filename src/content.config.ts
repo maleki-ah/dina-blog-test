@@ -121,17 +121,4 @@ const people = defineCollection({
   }),
 });
 
-// ─── Announcements ─────────────────────────────────────────────────────────
-
-const announcements = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/announcements' }),
-  schema: z.object({
-    date: z.coerce.date(),
-    /** Pin this announcement to the top. */
-    pinned: z.boolean().optional().default(false),
-    /** Hide from the announcements list. */
-    hidden: z.boolean().optional().default(false),
-  }),
-});
-
-export const collections = { posts, people, announcements };
+export const collections = { posts, people };

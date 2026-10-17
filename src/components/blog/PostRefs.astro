@@ -4,7 +4,7 @@
  * Frontmatter: refs: ["other-post-id", ...]. Unknown ids are skipped.
  */
 import { site } from '@config/site';
-import { formatPostDate, t } from '@utils/i18n';
+import { formatPostDate, normalizeLang, t } from '@utils/i18n';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -29,7 +29,7 @@ if (resolved.length === 0) return null;
 ---
 
 <section class="post-refs">
-  <h3 data-i18n="refsTitle">{t(lang, 'refsTitle')}</h3>
+  <h3>{t(lang, 'refsTitle')}</h3>
   <ol>
     {
       resolved.map((post) => (
@@ -39,11 +39,11 @@ if (resolved.length === 0) return null;
           </a>{' '}
           <span class="post-refs-meta">
             (
-            <time
-              datetime={post.data.date.toISOString()}
-              data-i18n-date={post.data.date.toISOString()}
-            >
-              {formatPostDate(post.data.date, lang)}
+            <time datetime={post.data.date.toISOString()}>
+              {formatPostDate(
+                post.data.date,
+                normalizeLang((post.data as { lang?: string }).lang ?? lang),
+              )}
             </time>
             )
           </span>

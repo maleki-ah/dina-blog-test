@@ -15,7 +15,9 @@ const { title, description, image, noindex, lang, dir } = Astro.props;
 
 <Base title={title} description={description} image={image} noindex={noindex} lang={lang} dir={dir}>
   <slot name="head" slot="head" />
-  <div class="page-container py-8">
+  <!-- `dir` is only set by English-only content pages (publications); when
+       omitted the container follows the site chrome language. -->
+  <div class="page-container py-8" dir={dir}>
     <slot />
   </div>
 </Base>

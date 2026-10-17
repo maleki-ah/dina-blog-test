@@ -9,7 +9,7 @@ import ReadingProgress from '@components/ReadingProgress.astro';
 import TOC from '@components/TOC.astro';
 import { site } from '@config/site';
 import { dirForLang, formatPostDate, normalizeLang, t } from '@utils/i18n';
-import { resolvePostAuthors } from '@utils/post-authors';
+import { authorDisplayName, resolvePostAuthors } from '@utils/post-authors';
 import { postBannerImage } from '@utils/post-image';
 import { relatedPosts } from '@utils/posts';
 import { readingTime as calcReadingTime } from '@utils/reading-time';
@@ -143,7 +143,9 @@ const jsonLd = {
   </Fragment>
   {site.features.progressBar && <ReadingProgress />}
 
-  <div class="page-container py-8">
+  <!-- Post layout follows the POST language, not the site chrome language:
+       the sidebar/content order must not flip when the visitor switches. -->
+  <div class="page-container py-8" lang={lang} dir={dir}>
     <div class="flex gap-8">
       <!-- TOC sidebar (desktop only) -->
       {
@@ -164,7 +166,7 @@ const jsonLd = {
         <nav aria-label="Breadcrumb" class="breadcrumb-nav">
           <a href={`${site.base}/`} class="breadcrumb-link">
             <span class="back-arrow" aria-hidden="true">←</span>{' '}
-            <span data-i18n="backToBlog">{t(lang, 'backToBlog')}</span>
+            <span>{t(lang, 'backToBlog')}</span>
           </a>
         </nav>
 
@@ -177,16 +179,18 @@ const jsonLd = {
           {
             postAuthors.length > 0 && (
               <p class="post-authors">
-                <span class="post-authors-label" data-i18n={postAuthors.length > 1 ? 'byMany' : 'by'}>
+                <span class="post-authors-label">
                   {t(lang, postAuthors.length > 1 ? 'byMany' : 'by')}
                 </span>{' '}
                 {postAuthors.map((author, i) => (
                   <>
                     {i > 0 && <span aria-hidden="true"> · </span>}
                     {author.href ? (
-                      <a href={author.href} class="post-author-link">{author.name}</a>
+                      <a href={author.href} class="post-author-link">
+                        {authorDisplayName(author, lang)}
+                      </a>
                     ) : (
-                      <span>{author.name}</span>
+                      <span>{authorDisplayName(author, lang)}</span>
                     )}
                   </>
                 ))}
@@ -197,8 +201,8 @@ const jsonLd = {
           <PostMeta date={date} tags={tags} categories={categories} readingTime={rt} lang={lang} />
           {lastmodFormatted && (
             <p class="post-lastmod" style="font-size: 0.8rem; color: var(--global-text-color-light); margin-top: 0.25rem;">
-              <span data-i18n="updated">{t(lang, 'updated')}</span>{' '}
-              <time datetime={lastmod!.toISOString()} data-i18n-date={lastmod!.toISOString()}>
+              <span>{t(lang, 'updated')}</span>{' '}
+              <time datetime={lastmod!.toISOString()}>
                 {lastmodFormatted}
               </time>
             </p>
@@ -250,9 +254,12 @@ const jsonLd = {
   </div>
 </Base>
 
-<!-- Code copy button (text-label approach, no innerHTML) -->
-<script define:vars={{ copyLabel: t(lang, 'copy'), copiedLabel: t(lang, 'copied') }}>
+<!-- Code copy button — the label is always English: code stays LTR in every
+     language, so its copy affordance must not follow the chrome language. -->
+<script>
   function addCopyButtons() {
+    const copyLabel = 'copy';
+    const copiedLabel = 'copied!';
     const blocks = document.querySelectorAll('#post-content pre');
     blocks.forEach((pre) => {
       if (pre.querySelector('.copy-btn')) return;
@@ -261,9 +268,20 @@ const jsonLd = {
       btn.setAttribute('aria-label', copyLabel);
       btn.textContent = copyLabel;
       btn.addEventListener('click', async () => {
+        // Shiki inputs hold a <code> child; plain outputs (e.g. Jupyter
+        // text results) hold raw text nodes — both are copyable.
         const code = pre.querySelector('code');
-        if (!code) return;
-        await navigator.clipboard.writeText(code.innerText);
+        const text = code
+          ? code.innerText
+          : Array.from(pre.childNodes)
+              .filter((n) => n !== btn)
+              .map((n) => n.textContent ?? '')
+              .join('');
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          return;
+        }
         btn.textContent = copiedLabel;
         setTimeout(() => {
           btn.textContent = copyLabel;
@@ -364,11 +382,11 @@ const jsonLd = {
             .then(function (mod) {
               var mermaid = mod.default;
               var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-              // DINA identity: Vazirmatn/Inter type + orange accents in both modes.
+              // DINA identity: Vazirmatn/Manrope type + orange accents in both modes.
               mermaid.initialize({
                 startOnLoad: false,
                 theme: isDark ? 'dark' : 'default',
-                fontFamily: "'Vazirmatn','Inter',system-ui,sans-serif",
+                fontFamily: "'Vazirmatn','Manrope',system-ui,sans-serif",
                 themeVariables: isDark
                   ? {
                       primaryColor: '#ff7a18',
@@ -652,31 +670,5 @@ const jsonLd = {
   #post-content .vega-embed {
     display: block;
     width: 100%;
-  }
-
-  /* Copy button is dynamically injected via JS — scoped CSS won't reach it.
-     Use :global so the class name isn't mangled with a data-astro-cid attribute. */
-  .copy-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
-    font-size: 0.7rem;
-    font-family: var(--font-mono, monospace);
-    background-color: var(--global-card-bg-color, #f5f5f5);
-    color: var(--global-text-color-light, #888);
-    line-height: 1.5;
-  }
-  pre:hover .copy-btn {
-    opacity: 1;
-  }
-  .copy-btn:hover {
-    background-color: var(--global-theme-color);
-    color: var(--global-hover-text-color, #fff);
   }
 </style>

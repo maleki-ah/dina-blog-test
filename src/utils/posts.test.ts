@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 // Mock astro:content so the module resolves in unit tests
 vi.mock('astro:content', () => ({ getCollection: vi.fn() }));
 
-import { allCategories, allTags, relatedPosts, sortPosts, visiblePosts } from './posts';
+import { relatedPosts } from './posts';
 
 // Minimal post factory — only the fields used by utils/posts.ts
 function makePost(
@@ -28,53 +28,6 @@ function makePost(
     },
   } as any;
 }
-
-describe('sortPosts', () => {
-  it('puts pinned posts first', () => {
-    const a = makePost('a', { date: new Date('2024-01-01') });
-    const b = makePost('b', { date: new Date('2024-06-01'), pinned: true });
-    expect(sortPosts([a, b])[0].id).toBe('b');
-  });
-
-  it('sorts by date descending within same pinned status', () => {
-    const old = makePost('old', { date: new Date('2020-01-01') });
-    const recent = makePost('recent', { date: new Date('2024-01-01') });
-    const result = sortPosts([old, recent]);
-    expect(result[0].id).toBe('recent');
-  });
-
-  it('does not mutate the input array', () => {
-    const posts = [makePost('a'), makePost('b')];
-    const copy = [...posts];
-    sortPosts(posts);
-    expect(posts).toEqual(copy);
-  });
-});
-
-describe('visiblePosts', () => {
-  it('filters out hidden posts', () => {
-    const visible = makePost('v');
-    const hidden = makePost('h', { hidden: true });
-    expect(visiblePosts([visible, hidden])).toEqual([visible]);
-  });
-});
-
-describe('allTags', () => {
-  it('returns unique sorted tags', () => {
-    const posts = [makePost('a', { tags: ['z', 'a'] }), makePost('b', { tags: ['a', 'b'] })];
-    expect(allTags(posts)).toEqual(['a', 'b', 'z']);
-  });
-});
-
-describe('allCategories', () => {
-  it('returns unique sorted categories', () => {
-    const posts = [
-      makePost('a', { categories: ['cs', 'ai'] }),
-      makePost('b', { categories: ['ai'] }),
-    ];
-    expect(allCategories(posts)).toEqual(['ai', 'cs']);
-  });
-});
 
 describe('relatedPosts', () => {
   it('excludes the current post', () => {

@@ -5,7 +5,7 @@ import ReadingProgress from '@components/ReadingProgress.astro';
 import TOC from '@components/TOC.astro';
 import { site } from '@config/site';
 import { dirForLang, normalizeLang, t } from '@utils/i18n';
-import { resolvePostAuthors } from '@utils/post-authors';
+import { authorDisplayName, resolvePostAuthors } from '@utils/post-authors';
 import { readingTime as calcReadingTime } from '@utils/reading-time';
 import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
@@ -51,7 +51,8 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
 <Base title={title} description={description} robots={effectiveRobots} lang={lang} dir={dir}>
   {site.features.progressBar && <ReadingProgress />}
 
-  <div class="distill-page-container py-8">
+  <!-- Distill layout follows the POST language, not the site chrome language. -->
+  <div class="distill-page-container py-8" lang={lang} dir={dir}>
     <div class="mx-auto flex max-w-5xl gap-8 px-4">
       <!-- TOC sidebar (desktop only) -->
       {
@@ -68,7 +69,7 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
         <nav aria-label="Breadcrumb" class="breadcrumb-nav">
           <a href={`${site.base}/`} class="breadcrumb-link">
             <span class="back-arrow" aria-hidden="true">←</span>{' '}
-            <span data-i18n="backToBlog">{t(lang, 'backToBlog')}</span>
+            <span>{t(lang, 'backToBlog')}</span>
           </a>
         </nav>
 
@@ -111,10 +112,7 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
           {
             linkedAuthors.length > 0 && (
               <p class="post-authors">
-                <span
-                  class="post-authors-label"
-                  data-i18n={linkedAuthors.length > 1 ? 'byMany' : 'by'}
-                >
+                <span class="post-authors-label">
                   {t(lang, linkedAuthors.length > 1 ? 'byMany' : 'by')}
                 </span>{' '}
                 {linkedAuthors.map((author, i) => (
@@ -122,10 +120,10 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
                     {i > 0 && <span aria-hidden="true"> · </span>}
                     {author.href ? (
                       <a href={author.href} class="post-author-link">
-                        {author.name}
+                        {authorDisplayName(author, lang)}
                       </a>
                     ) : (
-                      <span>{author.name}</span>
+                      <span>{authorDisplayName(author, lang)}</span>
                     )}
                   </>
                 ))}
@@ -152,9 +150,12 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
   <script is:inline src={`${import.meta.env.BASE_URL}assets/js/distillpub/overrides.js`}></script>
 </Base>
 
-<!-- Code copy button -->
-<script define:vars={{ copyLabel: t(lang, 'copy'), copiedLabel: t(lang, 'copied') }}>
+<!-- Code copy button — the label is always English: code stays LTR in every
+     language, so its copy affordance must not follow the chrome language. -->
+<script>
   function addCopyButtons() {
+    const copyLabel = 'copy';
+    const copiedLabel = 'copied!';
     const blocks = document.querySelectorAll('#distill-post-content pre');
     blocks.forEach((pre) => {
       if (pre.querySelector('.copy-btn')) return;
@@ -163,9 +164,20 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
       btn.setAttribute('aria-label', copyLabel);
       btn.textContent = copyLabel;
       btn.addEventListener('click', async () => {
+        // Shiki inputs hold a <code> child; plain outputs (e.g. Jupyter
+        // text results) hold raw text nodes — both are copyable.
         const code = pre.querySelector('code');
-        if (!code) return;
-        await navigator.clipboard.writeText(code.innerText);
+        const text = code
+          ? code.innerText
+          : Array.from(pre.childNodes)
+              .filter((n) => n !== btn)
+              .map((n) => n.textContent ?? '')
+              .join('');
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          return;
+        }
         btn.textContent = copiedLabel;
         setTimeout(() => {
           btn.textContent = copyLabel;
@@ -266,33 +278,6 @@ const rt = post.body ? calcReadingTime(post.body) : 1;
     margin: 1.5rem 0;
     font-style: italic;
     color: var(--global-text-color-light);
-  }
-
-  /* Code copy button */
-  .copy-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
-    font-size: 0.7rem;
-    font-family: var(--font-mono, monospace);
-    background-color: var(--global-card-bg-color, #f5f5f5);
-    color: var(--global-text-color-light, #888);
-    line-height: 1.5;
-  }
-
-  pre:hover .copy-btn {
-    opacity: 1;
-  }
-
-  .copy-btn:hover {
-    background-color: var(--global-theme-color);
-    color: var(--global-hover-text-color, #fff);
   }
 
   /* Distill note/callout helper class — use in MDX as <div class="distill-note"> */

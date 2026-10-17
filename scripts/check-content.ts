@@ -1,7 +1,7 @@
 /**
  * check-content.ts
  *
- * Fast frontmatter validation for content pull requests (posts, news,
+ * Fast frontmatter validation for content pull requests (posts and
  * people). Students only write Markdown — this catches typos in `authors`,
  * `refs`, `lang` and `image` paths in seconds, without a full site build.
  *
@@ -119,15 +119,6 @@ for (const file of listFiles('src/content/posts')) {
       fail(file, `image not found: public/${local}`);
     }
   }
-}
-
-// ─── Announcements ──────────────────────────────────────────────────────────
-
-for (const file of listFiles('src/content/announcements')) {
-  checked++;
-  const { data, ok } = splitFrontmatter(readFileSync(join(root, file), 'utf8'), file);
-  if (!ok) continue;
-  checkDate(data, file);
 }
 
 // ─── People ─────────────────────────────────────────────────────────────────

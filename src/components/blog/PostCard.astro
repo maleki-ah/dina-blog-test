@@ -1,10 +1,10 @@
 ---
 import { site } from '@config/site';
 import { formatCount, formatPostDate, normalizeLang, t } from '@utils/i18n';
+import { authorDisplayName, resolvePostAuthors } from '@utils/post-authors';
 import { postBannerImage } from '@utils/post-image';
 import { readingTime } from '@utils/reading-time';
 import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
 
 import IconCalendar from '~icons/fa-solid/calendar';
 import IconHashtag from '~icons/fa-solid/hashtag';
@@ -55,16 +55,8 @@ const banner = postBannerImage(post.id, thumbnail);
 
 const authorSlugs = !isExternal ? ((post as LocalPost).data.authors ?? []) : [];
 
-// Resolve author display names via the people collection (single fetch, cached at build).
-let authorLinks: Array<{ slug: string; name: string }> = [];
-if (authorSlugs.length > 0) {
-  const people = await getCollection('people');
-  const byId = new Map(people.map((p) => [p.id.replace(/\.mdx?$/, ''), p.data.name]));
-  authorLinks = authorSlugs.map((slug) => {
-    const key = slug.replace(/\.mdx?$/, '');
-    return { slug: key, name: byId.get(key) ?? byId.get(slug) ?? key.replace(/[-_]+/g, ' ') };
-  });
-}
+// Resolve author display names via the people collection (single source of truth).
+const authorLinks = await resolvePostAuthors(authorSlugs);
 
 const href = isExternal ? (post as ExternalPost).url : `${site.base}/posts/${post.id}/`;
 
@@ -112,14 +104,12 @@ const year = d.getFullYear();
       {
         minutes && (
           <>
-            <span data-i18n="minReadN" data-i18n-vars={JSON.stringify({ n: minutes })}>
-              {t(lang, 'minReadN').replace('{n}', formatCount(minutes, lang))}
-            </span>{' '}
+            <span>{t(lang, 'minReadN').replace('{n}', formatCount(minutes, lang))}</span>{' '}
             &nbsp;&middot;&nbsp;{' '}
           </>
         )
       }
-      <time datetime={d.toISOString()} data-i18n-date={d.toISOString()}>
+      <time datetime={d.toISOString()}>
         {formattedDate}
       </time>
       {
@@ -132,7 +122,11 @@ const year = d.getFullYear();
               {authorLinks.map((author, i) => (
                 <>
                   {i > 0 && <span>, </span>}
-                  <a href={`${site.base}/members/${author.slug}/`}>{author.name}</a>
+                  {author.href ? (
+                    <a href={author.href}>{authorDisplayName(author, lang)}</a>
+                  ) : (
+                    <span>{authorDisplayName(author, lang)}</span>
+                  )}
                 </>
               ))}
             </span>

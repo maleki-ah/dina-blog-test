@@ -15,22 +15,19 @@ const { date, tags = [], categories = [], readingTime, lang = 'en' } = Astro.pro
 const d = date instanceof Date ? date : new Date(date);
 const formattedDate = formatPostDate(d, lang);
 const isoDate = d.toISOString();
-const minReadVars = readingTime ? JSON.stringify({ n: readingTime }) : undefined;
 ---
 
 <div
   class="post-meta mt-1 flex flex-wrap items-center gap-2 text-xs"
   style="color: var(--global-text-color-light);"
 >
-  <time datetime={isoDate} data-i18n-date={isoDate}>{formattedDate}</time>
+  <time datetime={isoDate}>{formattedDate}</time>
 
   {
     readingTime && (
       <>
         <span aria-hidden="true">·</span>
-        <span data-i18n="minReadN" data-i18n-vars={minReadVars}>
-          {t(lang, 'minReadN').replace('{n}', formatCount(readingTime, lang))}
-        </span>
+        <span>{t(lang, 'minReadN').replace('{n}', formatCount(readingTime, lang))}</span>
       </>
     )
   }

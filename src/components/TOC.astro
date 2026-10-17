@@ -9,6 +9,10 @@ interface Props {
 
 const { headings, lang = 'en' } = Astro.props;
 
+// TOC is part of the post content zone: it follows the post language,
+// never the site chrome language.
+const dir = lang === 'fa' ? 'rtl' : 'ltr';
+
 // Only render h2 and h3
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 if (tocHeadings.length === 0) return;
@@ -16,13 +20,14 @@ if (tocHeadings.length === 0) return;
 
 <nav
   aria-label={t(lang, 'toc')}
+  lang={lang}
+  dir={dir}
   class="toc sticky top-20"
   style="font-size: 0.8rem; max-height: calc(100vh - 6rem); overflow-y: auto;"
 >
   <p
     class="mb-2 font-semibold tracking-wide uppercase"
     style="font-size: 0.7rem; color: var(--global-text-color-light);"
-    data-i18n="toc"
   >
     {t(lang, 'toc')}
   </p>
@@ -78,6 +83,12 @@ if (tocHeadings.length === 0) return;
 </script>
 
 <style>
+  /* Own alignment so the TOC does not inherit the page-direction alignment
+     from .page-container when the chrome language differs from the post. */
+  .toc {
+    text-align: start;
+  }
+
   .toc-link:hover {
     color: var(--global-theme-color) !important;
   }

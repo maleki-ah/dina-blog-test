@@ -1,5 +1,5 @@
 /**
- * Lightweight BibTeX parser for as-folio.
+ * Lightweight BibTeX parser.
  *
  * Handles the common entry types and custom fields used in the publications page.
  * Supports nested braces in values and LaTeX-encoded characters.
@@ -58,7 +58,7 @@ export function parseBibtex(src: string): BibEntry[] {
     const keyMatch = body.match(/^\s*([\w:-]+)\s*,/);
     if (!keyMatch) {
       if (import.meta.env.DEV) {
-        console.warn(`[as-folio] BibTeX: could not parse citation key in @${type} entry — skipped`);
+        console.warn(`[dina-lab] BibTeX: could not parse citation key in @${type} entry — skipped`);
       }
       continue;
     }
@@ -118,9 +118,17 @@ export function getYear(entry: BibEntry): number {
   return parseInt(entry.fields.year ?? '0', 10);
 }
 
-/** Get formatted authors string: "First Last, First Last, ..." */
-export function getAuthors(entry: BibEntry): string {
-  const raw = entry.fields.author ?? '';
+/**
+ * Get formatted authors string: "First Last, First Last, ..."
+ *
+ * Pass `lang` to prefer a localized author list when the entry provides one
+ * (e.g. `author_fa` for a Persian publication). The Latin `author` field is
+ * always kept for indexing/citation meta tags, so callers that need that can
+ * simply omit `lang`.
+ */
+export function getAuthors(entry: BibEntry, lang?: string): string {
+  const raw =
+    lang === 'fa' && entry.fields.author_fa ? entry.fields.author_fa : (entry.fields.author ?? '');
   if (!raw) return '';
   return raw
     .split(/\s+and\s+/i)
@@ -160,7 +168,7 @@ export function getBoolField(entry: BibEntry, field: string): boolean {
 // ─── Clean BibTeX output ──────────────────────────────────────────────────────
 
 /**
- * as-folio display-only fields that should be excluded from the copyable
+ * Display-only fields that should be excluded from the copyable
  * BibTeX citation block. These are template metadata, not standard BibTeX.
  */
 export const BIBTEX_INTERNAL_FIELDS = new Set([
@@ -169,6 +177,7 @@ export const BIBTEX_INTERNAL_FIELDS = new Set([
   'additional_info',
   'altmetric',
   'annotation',
+  'author_fa',
   'award',
   'award_name',
   'bibtex_show',
@@ -178,6 +187,7 @@ export const BIBTEX_INTERNAL_FIELDS = new Set([
   'google_scholar_id',
   'html',
   'inspirehep_id',
+  'lang',
   'pdf',
   'poster',
   'preview',
@@ -189,7 +199,7 @@ export const BIBTEX_INTERNAL_FIELDS = new Set([
 ]);
 
 /**
- * Build a clean BibTeX citation string with as-folio internal fields removed.
+ * Build a clean BibTeX citation string with internal display fields removed.
  * Use this whenever displaying or copying citations to end users.
  */
 export function getCleanBibtex(entry: BibEntry): string {

@@ -78,22 +78,10 @@ export async function GET(_ctx: APIContext): Promise<Response> {
       priority: 1.0,
     },
     {
-      url: loc('/about/'),
-      lastmod: gitLastmod('src/pages/about.astro'),
-      changefreq: 'monthly',
-      priority: 0.9,
-    },
-    {
       url: loc('/publications/'),
       lastmod: gitLastmod('src/pages/publications/index.astro'),
       changefreq: 'monthly',
       priority: 0.8,
-    },
-    {
-      url: loc('/news/'),
-      lastmod: gitLastmod('src/pages/news.astro'),
-      changefreq: 'weekly',
-      priority: 0.7,
     },
     {
       url: loc('/members/'),

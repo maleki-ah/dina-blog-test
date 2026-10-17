@@ -1,6 +1,6 @@
 # Customization Guide
 
-This guide walks through every aspect of personalizing your as-folio site.
+This guide walks through every aspect of personalizing the DINA Lab blog.
 
 ---
 
@@ -10,21 +10,19 @@ This guide walks through every aspect of personalizing your as-folio site.
 2. [Site identity](#2-site-identity)
 3. [Profile photo](#3-profile-photo)
 4. [Social links](#4-social-links)
-5. [About page content](#5-about-page-content)
-6. [Blog posts](#6-blog-posts)
-7. [Publications (BibTeX)](#7-publications-bibtex) — BibTeX fields, co-author links, citation badges
-8. [People / Lab members](#8-people--lab-members)
-9. [Announcements](#9-announcements)
-10. [Dark mode](#10-dark-mode)
-11. [Comments (Giscus / Disqus)](#11-comments-giscus--disqus)
-12. [Analytics](#12-analytics)
-13. [Newsletter](#13-newsletter)
-14. [Cookie consent](#14-cookie-consent)
-15. [Search](#15-search)
-16. [Deployment base path](#16-deployment-base-path)
-17. [Enabling / disabling features](#17-enabling--disabling-features)
-18. [Custom styles](#18-custom-styles)
-19. [Footer position](#19-footer-position)
+5. [Blog posts](#5-blog-posts)
+6. [Publications (BibTeX)](#6-publications-bibtex) — BibTeX fields, co-author links, citation badges
+7. [People / Lab members](#7-people--lab-members)
+8. [Dark mode](#8-dark-mode)
+9. [Comments (Giscus / Disqus)](#9-comments-giscus--disqus)
+10. [Analytics](#10-analytics)
+11. [Newsletter](#11-newsletter)
+12. [Cookie consent](#12-cookie-consent)
+13. [Search](#13-search)
+14. [Deployment base path](#14-deployment-base-path)
+15. [Enabling / disabling features](#15-enabling--disabling-features)
+16. [Custom styles](#16-custom-styles)
+17. [Footer position](#17-footer-position)
 
 ---
 
@@ -86,17 +84,10 @@ export const site = {
   author: {
     name: 'Your Name',
     email: 'you@example.com',
-    subtitle: 'Professor of Physics · MIT',
-    moreInfo: `
-      <p>Department of Physics</p>
-      <p>77 Massachusetts Avenue</p>
-      <p>Cambridge, MA 02139</p>
-    `,
+    avatar: '/assets/logo/dina-logo.png',   // navbar/footer brand logo
   },
 };
 ```
-
-`subtitle` and `moreInfo` support HTML.
 
 `url` and `base` in `site.ts` are derived from Astro's resolved environment, so you normally
 should not edit them directly. Use `ASTRO_SITE` and `ASTRO_BASE` instead.
@@ -105,60 +96,38 @@ should not edit them directly. Use `ASTRO_SITE` and `ASTRO_BASE` instead.
 
 ## 3. Profile photo
 
-Replace `public/assets/img/prof_pic.jpg` (or `.svg`, `.png`, `.webp`) with your own photo.
-
-Update the path in `site.ts`:
+The brand image (navbar, footer, and blog hero) comes from `author.avatar` in `site.ts`.
+The repo ships with `public/assets/logo/DINA-logo.png`; replace that file or point the
+path at your own image:
 
 ```typescript
 author: {
-  avatar: '/assets/img/prof_pic.jpg',
+  avatar: '/assets/logo/DINA-logo.png',
 }
 ```
 
-Recommended: square image, at least 400×400 px.
+Recommended: square image, at least 400×400 px, optimized (see the note at the end of
+this guide about keeping assets small).
 
 ---
 
 ## 4. Social links
 
-Set any platform to `undefined` to hide it:
+Only the keys below are read: they feed the homepage `Person` JSON-LD and the Open Graph
+tags. Set a key to `undefined` to omit it:
 
 ```typescript
 socials: {
-  email: 'you@example.com',
+  x_username: 'your-x-handle',         // Twitter/X card tag
   github_username: 'your-github',
-  x_username: undefined,               // hide X/Twitter
-  linkedin_username: 'your-linkedin',
-  scholar_userid: 'YOUR_SCHOLAR_ID',   // part after user= in Scholar URL
+  scholar_userid: 'YOUR_SCHOLAR_ID',   // part after user= in your Scholar URL
   orcid_id: '0000-0000-0000-0000',
-  inspire_id: undefined,
-  researchgate_username: undefined,
-  arxiv_id: undefined,
-  youtube_id: undefined,
-  instagram_username: undefined,
-  mastodon_url: undefined,
-  bluesky_handle: 'you.bsky.social',
-  medium_username: undefined,
-  cv_pdf: '/assets/pdf/cv.pdf',        // link to your CV PDF
-  rss_icon: true,
 },
 ```
 
 ---
 
-## 5. About page content
-
-Edit `src/pages/index.astro` to change the bio text. The About page auto-pulls from:
-
-- **Announcements**: up to `site.announcements.limit` items from `src/content/announcements/`
-- **Latest posts**: up to `site.latestPosts.limit` posts from `src/content/posts/`
-- **Selected papers**: entries with `selected = {true}` in `src/data/papers.bib`
-
-All three sections can be disabled in `site.ts`.
-
----
-
-## 6. Blog posts
+## 5. Blog posts
 
 Create `.md` or `.mdx` files in `src/content/posts/`:
 
@@ -170,7 +139,7 @@ lastmod: 2024-09-01  # optional: last modified date — shown in header and JSON
 description: "Shown in listings and meta tags"
 tags: [physics, math]
 categories: [science]
-lang: en             # "en" (LTR, Inter) or "fa" (RTL, Vazirmatn). Default: "en"
+lang: en             # "en" (LTR, Manrope) or "fa" (RTL, Vazirmatn). Default: "en"
 authors: [mehrdad-ashtiani]  # slugs from src/content/people/*.md — linked to profiles
 refs: [other-post-id]  # manual cross-references — rendered as References/منابع
 math: true           # enable KaTeX rendering
@@ -206,9 +175,13 @@ Posts in the listing are grouped by year automatically.
 
 ### Bilingual posts (English + Persian)
 
-Set `lang` in frontmatter. English posts render LTR with Inter; Persian posts
+Set `lang` in frontmatter. English posts render LTR with Manrope; Persian posts
 render RTL with Vazirmatn. Code blocks, KaTeX math, and Mermaid diagrams always
-stay LTR, even inside RTL pages.
+stay LTR, even inside RTL pages. Author names follow the POST language
+(`authorDisplayName` in `src/utils/post-authors.ts`): Persian posts show the
+Persian name, English posts the English name — regardless of the site chrome
+language. Author names deep-link to their anchor on the members page
+(`/members/#<slug>`, with a `:target` highlight).
 
 ```yaml
 ---
@@ -226,6 +199,34 @@ placeholder, skip-link, back-to-top, copy buttons, and newsletter texts.
 `Newsletter.astro`, and `Navbar.astro` all accept a `lang` prop; `Post.astro`
 and `Distill.astro` pass the post language down automatically. The navbar language switcher links the default
 language to the clean URL and other languages via `?lang=`.
+
+### Content language vs. site language (hard rule)
+
+Content zones are monolingual and NEVER follow the site language switch —
+they render as if the site were in their own language:
+
+- **Posts, post cards, related/ref cards, TOC, share, comments**: server-rendered
+  in the post's `lang` with NO `data-i18n*` attributes, so the `LabI18n` engine
+  leaves them untouched. `PostMeta`, `PostRefs`, `RelatedPosts`, `SocialShare`,
+  `TOC`, and `Giscus` all take the post language via their `lang` prop.
+  Direction is pinned on the zone itself (`dir` + an explicit `text-align`), not
+  inherited — because `text-align` crosses `dir` boundaries and would otherwise
+  follow the page chrome. Fonts and line rhythm are pinned the same way: an
+  English post always renders in the Latin faces (Manrope / Space Grotesk) and a
+  Persian post always in Vazirmatn, whichever chrome language is active. See the
+  "Content-zone isolation" block in `src/styles/global.css`.
+- **Publications**: each entry card renders in its OWN language — a `lang = {fa}`
+  entry is `dir="rtl"` with Vazirmatn and Persian card labels (چکیده / بیب‌تک /
+  جزئیات); an English entry stays LTR with `Abs` / `Bib` / `Details`. Card labels
+  carry NO `data-i18n*` attributes, so switching the site language never
+  translates them. Only the index page's own chrome — page title, search box,
+  result counts, "no results" — follows the site language via the
+  `lab-lang-change` listener in `BibSearch`.
+- **Code blocks**: the injected copy button is never translated — it always reads
+  `copy` / `copied!`, because code stays LTR in every language.
+- **Switchable chrome only**: navbar, footer, blog hero, tag/archive headers,
+  pagination, search palette, and the whole members page keep `data-i18n*` and
+  follow the switcher. Never put `data-i18n*` on content-zone strings.
 
 ### Cross-references between posts
 
@@ -258,9 +259,9 @@ Add `authors` with slugs matching files in `src/content/people/`:
 authors: [mehrdad-ashtiani, ali-ahmadi]
 ```
 
-Names on post pages and cards link to `/members/<slug>/`. Unknown slugs render
-as plain readable text. JSON-LD `author` uses the resolved names and
-`inLanguage` carries the post language.
+Names on post pages and cards link to `/members/#<slug>` (the anchor scrolls to the
+member and briefly highlights the card). Unknown slugs render as plain readable text.
+JSON-LD `author` uses the resolved names and `inLanguage` carries the post language.
 
 ### Post images (thumbnail + hero banner)
 
@@ -272,12 +273,78 @@ Set `image` to a path under `public/` (e.g. `/assets/img/my-post.jpg`):
 
 ### MDX components available in posts
 
+Convert a post to `.mdx` and import only what it needs:
+
 ```mdx
 import VideoEmbed from '@components/VideoEmbed.astro';
+import Figure from '@components/Figure.astro';
 import Tabs from '@components/Tabs.astro';
 
-<VideoEmbed src="https://www.youtube.com/watch?v=..." />
+<VideoEmbed src="https://www.youtube.com/watch?v=..." title="Talk" caption="Recording." />
+<Figure path="/assets/img/diagram.svg" alt="Diagram" caption="Figure 1. ..." />
+<Tabs tabs={['Python', 'Bash']} id="my-tabs">
+  <div slot="tab-0">…first panel…</div>
+  <div slot="tab-1">…second panel…</div>
+</Tabs>
 ```
+
+A complete live reference lives in `src/content/posts/rich-media-showcase.mdx`
+(English) and `rich-media-showcase-fa.mdx` (Persian): the rendered page is exactly
+what the source writes. Video embeds stay LTR inside Persian posts, and figures,
+tabs and code always follow the post's own direction.
+
+### Jupyter notebooks
+
+Notebook-style posts use a real executed `.ipynb` file plus a transcribed
+`<JupyterNotebook>` block. The site never runs Python — it renders the saved
+inputs and outputs, and the action bar links readers to Colab/Binder for free
+execution.
+
+**Step 1 — save the executed notebook** in `public/assets/notebooks/` using
+the post slug as filename:
+
+```text
+public/assets/notebooks/fedavg-notebook.ipynb
+```
+
+Run all cells in Jupyter/Colab first so `outputs` (including `image/png`
+figures, stored as base64 inside the `.ipynb` JSON) are saved in the file.
+
+**Step 2 — transcribe the cells** into the `.mdx` post (see
+`src/content/posts/fedavg-notebook.mdx` as the reference example):
+
+```mdx
+import JupyterNotebook from '../../components/JupyterNotebook.astro';
+
+<JupyterNotebook
+  language="python"
+  colabUrl="https://colab.research.google.com/github/dina-lab-iust/blog/blob/main/public/assets/notebooks/fedavg-notebook.ipynb"
+  binderUrl="https://mybinder.org/v2/gh/dina-lab-iust/blog/main?filepath=public%2Fassets%2Fnotebooks%2Ffedavg-notebook.ipynb"
+  notebookHref="/assets/notebooks/fedavg-notebook.ipynb"
+  cells={[
+    {
+      cell_type: 'code',
+      execution_count: 1,
+      source: ['print("hello")'],
+      outputs: [{ output_type: 'stream', text: ['hello\n'] }],
+    },
+  ]}
+/>
+```
+
+**Rules:**
+
+| Item | Format |
+| ---- | ------ |
+| Cell | `{ cell_type: 'code' \| 'markdown' \| 'raw', source: string[], outputs?: Output[], execution_count?: number \| null }` |
+| `source` / `text` | Arrays of strings exactly as in `.ipynb` JSON (keep `\n` line endings) |
+| Outputs | `execute_result` / `stream` / `display_data` with `text/plain`, `text/html` or `image/png` (base64 figures render as `<img>`) |
+| `execution_count` | Use the real `In [N]` number; `null` renders `In [ ]` for unrun cells |
+| `colabUrl` / `binderUrl` | Replace `dina-lab-iust/blog` with the real repo if it differs |
+| `notebookHref` | Always root-relative (`/assets/notebooks/…`) — the base path (`/blog`) is prepended automatically |
+
+All code inputs and text outputs are always LTR and left-aligned (even in
+Persian posts) and get an automatic copy button pinned to the right side.
 
 ### Per-post CDN widgets
 
@@ -300,9 +367,9 @@ Enable in frontmatter:
 
 ---
 
-## 7. Publications (BibTeX)
+## 6. Publications (BibTeX)
 
-Edit `src/data/papers.bib`. Standard BibTeX format with extra as-folio fields:
+Edit `src/data/papers.bib`. Standard BibTeX format with extra display-only fields:
 
 ```bibtex
 @article{yourkey2024,
@@ -316,8 +383,9 @@ Edit `src/data/papers.bib`. Standard BibTeX format with extra as-folio fields:
   doi      = {10.1000/xyz123},
 
   % ── Display / layout ────────────────────────────────────────────────────
-  selected    = {true},               % show on About page under Selected Publications
   abbr        = {J. Ex.},             % short venue badge (e.g. NeurIPS, Nature)
+  lang        = {fa},                 % {fa} renders this entry RTL + Vazirmatn; default is English/LTR
+  author_fa   = {نام یک and نام دو},  % optional Persian author list used for display when lang = {fa}
   abstract    = {Your abstract.},
   annotation  = {Short note shown below authors as italic tooltip.},
   additional_info = {Workshop version also presented at ICML.},
@@ -348,6 +416,25 @@ Edit `src/data/papers.bib`. Standard BibTeX format with extra as-folio fields:
 ```
 
 The publication page groups entries by year, newest first. BibTeX is parsed at build time — no runtime dependency.
+
+Each entry renders in its **own** language, never the site language:
+
+- `lang = {fa}` → the card **and its detail page** are `dir="rtl"`, right-aligned
+  and set in Vazirmatn; anything else stays English/LTR.
+- `author_fa = {نام یک and نام دو}` (optional) supplies the Persian author list
+  shown when `lang = {fa}`. Write it in natural order with no commas. The Latin
+  `author` field is still used for indexing and the Highwire `citation_author`
+  meta tags, so keep both. Code blocks and the BibTeX citation stay LTR/left in
+  every language.
+- Every visible string inside a card **and on its detail page** — section headings
+  (`Abstract`/`Citation`), the `Publications` breadcrumb, the `Details` link and
+  the `Abs`/`Bib`/`Supp` toggles — follows the **entry's** language. Switching the
+  site language leaves them unchanged. Only the index page's own chrome (page
+  title, search box, result counts, no-results message) follows the site language.
+- When an entry has more authors than `publications.maxAuthorLimit`, the overflow
+  is **counted from the entry's author list** (never hardcoded) and worded in the
+  entry's language — e.g. `, and 1 more author` / `, and 4 more authors` for
+  English, or `، و ۲ نویسندهٔ دیگر` for Persian (`lang = {fa}`).
 
 ### Author highlighting and asset paths
 
@@ -431,7 +518,7 @@ This calls the [OpenAlex API](https://openalex.org) (free, no auth) to fetch cur
 
 ---
 
-## 8. People / Lab members
+## 7. People / Lab members
 
 Create `.md` files in `src/content/people/`:
 
@@ -459,24 +546,7 @@ language switch. The `supervisor` group renders under “Supervisor / استاد
 
 ---
 
-## 9. Announcements
-
-Create `.md` files in `src/content/announcements/`:
-
-```yaml
----
-date: 2024-06-01
-pinned: false
----
-Announcement text here. HTML and Markdown are supported.
-[Link text](https://example.com) works too.
-```
-
-Announcements appear on the About page (if `site.announcements.enabled: true`) and on the dedicated `/news` page.
-
----
-
-## 10. Dark mode
+## 8. Dark mode
 
 Dark mode is enabled by default (`site.features.darkmode: true`). The initial theme follows the OS preference.
 
@@ -519,7 +589,7 @@ Set either value to `'auto'` to keep the built-in default for that mode.
 
 ---
 
-## 11. Comments (Giscus / Disqus)
+## 9. Comments (Giscus / Disqus)
 
 ### Giscus (GitHub Discussions — recommended)
 
@@ -543,7 +613,7 @@ giscus: {
 },
 ```
 
-Giscus appears on all blog posts. Enable per-project with `giscus_comments: true` in project frontmatter.
+Giscus appears on all blog posts. Leave `enabled: false` to hide it everywhere.
 
 ### Disqus
 
@@ -559,7 +629,7 @@ Find your shortname in your Disqus admin dashboard → Settings → General → 
 
 ---
 
-## 12. Analytics
+## 10. Analytics
 
 Set any analytics provider in `site.ts` (leave others as empty string `''`):
 
@@ -578,7 +648,7 @@ All analytics scripts are loaded via Partytown (web worker) to avoid blocking th
 
 ---
 
-## 13. Newsletter
+## 11. Newsletter
 
 Integration with [Loops.so](https://loops.so):
 
@@ -598,7 +668,7 @@ The newsletter form appears in the footer.
 
 ---
 
-## 14. Cookie consent
+## 12. Cookie consent
 
 Enable GDPR-compliant cookie consent:
 
@@ -612,7 +682,7 @@ The dialog uses [vanilla-cookieconsent](https://github.com/orestbida/cookieconse
 
 ---
 
-## 15. Search
+## 13. Search
 
 Search is enabled by default. It's powered by [Pagefind](https://pagefind.app) (build-time index) with [ninja-keys](https://github.com/ssleptsov/ninja-keys) for the ⌘K command palette UI.
 
@@ -628,7 +698,7 @@ The search index is rebuilt on every `yarn build` run.
 
 ---
 
-## 16. Deployment base path
+## 14. Deployment base path
 
 **User/org pages** (`username.github.io`):
 
@@ -648,7 +718,7 @@ ASTRO_BASE=/repo-name
 
 ---
 
-## 17. Enabling / disabling features
+## 15. Enabling / disabling features
 
 All feature flags live in the `features` block of `site.ts`:
 
@@ -658,17 +728,15 @@ features: {
   search: true,         // ⌘K search
   progressBar: true,    // reading progress bar on posts
   backToTop: true,      // floating back-to-top button
-  masonry: true,        // auto masonry layout for projects
   mediumZoom: true,     // click-to-zoom on images
   cookieConsent: false, // GDPR cookie dialog
   newsletter: false,    // newsletter form in footer
-  videoEmbedding: false,// embed video links in bib entries
 },
 ```
 
 ---
 
-## 18. Custom styles
+## 16. Custom styles
 
 All theming is done through CSS custom properties defined in `src/styles/_colors.css`. Override them to change colors, fonts, and spacing site-wide:
 
@@ -687,11 +755,23 @@ All theming is done through CSS custom properties defined in `src/styles/_colors
 }
 ```
 
-The easiest way to change the accent color is via `site.ts` (see §14 — Dark mode → Theme color). For other CSS variable overrides (background, text, borders, fonts, etc.), edit `src/styles/_colors.css` directly.
+The easiest way to change the accent color is via `site.ts` (see §8 — Dark mode → Theme color). For other CSS variable overrides (background, text, borders, fonts, etc.), edit `src/styles/_colors.css` directly.
+
+### Cursor glow and text caret
+
+The site keeps a soft DINA-orange halo that follows the mouse (`.cursor-glow`,
+injected by `Base.astro`; disabled for touch pointers and `prefers-reduced-motion`).
+To remove it entirely, delete the `.cursor-glow` block in `src/styles/global.css`
+and the `<div class="cursor-glow">` + script in `src/layouts/Base.astro`.
+
+Clicking on read-only text does **not** leave a blinking text caret:
+`caret-color: transparent` is set on `html` in `src/styles/_typography.css`.
+Real typing fields re-enable it (`input`, `textarea`, `select`,
+`[contenteditable]`, and the `ninja-keys` search palette).
 
 ---
 
-## 19. Footer position
+## 17. Footer position
 
 Control where and whether the footer appears with `site.footer.position`:
 
@@ -707,7 +787,7 @@ footer: {
 
 | Value      | Behaviour                                                                                 |
 | ---------- | ----------------------------------------------------------------------------------------- |
-| `'sticky'` | Footer is always visible at the bottom of the viewport (default, matches al-folio)        |
+| `'sticky'` | Footer is always visible at the bottom of the viewport (default)                     |
 | `'normal'` | Footer sits at the natural bottom of the page content — only visible after scrolling down |
 | `'hidden'` | Footer is not rendered at all                                                             |
 
@@ -722,13 +802,13 @@ Branch model for student collaboration:
 ```text
 main                  ← production; every push deploys to GitHub Pages
 develop               ← template / design changes; merged into main via PR
-<name>/<slug>         ← one post or news item; opened as PR into main,
+<name>/<slug>         ← one post or member update; opened as PR into main,
                         deleted after merge (e.g. sina/fedavg-notebook)
 ```
 
 Rules:
 
-- **Posts & news** branch off `main`, not `develop`. One branch per item, named
+- **Posts & member updates** branch off `main`, not `develop`. One branch per item, named
   `<github-username>/<post-id>`. Open a PR into `main`; CI runs only the fast
   content check (`yarn content:check` — frontmatter, authors, references,
   images). No full build is needed for Markdown-only changes. Delete the branch

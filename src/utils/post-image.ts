@@ -26,19 +26,7 @@ export interface BannerPair {
   dark: string;
 }
 
-/**
- * Deterministic fallback banner for a post id (stable across builds —
- * no random flicker between card and hero, which resolve the same id).
- */
-export function fallbackPostImage(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return withBase(FALLBACK_IMAGES[hash % FALLBACK_IMAGES.length]);
-}
-
-/** Light/dark fallback pair for a post id. */
+/** Deterministic light/dark fallback pair for a post id. */
 export function fallbackPostImagePair(id: string): BannerPair {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {

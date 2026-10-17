@@ -29,9 +29,11 @@ export interface PubI18n {
   noResults: string;
   showingOne: string;
   showingMany: string;
-  moreOne: string;
-  moreMany: string;
   details: string;
+  /** Short card toggle labels (stay inside the entry's own language zone). */
+  abstract?: string;
+  bibtex?: string;
+  supp?: string;
 }
 
 interface BadgeConfig {
@@ -75,6 +77,11 @@ function entryUrl(entry: BibEntry): string {
   return '';
 }
 
+/** Persian digits for the result count, matching the chrome i18n engine. */
+function faDigits(value: string): string {
+  return value.replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+}
+
 function PublicationEntry({
   entry,
   maxAuthorLimit = 3,
@@ -89,6 +96,7 @@ function PublicationEntry({
   scholarUserId = '',
   badges,
   ui,
+  i18n,
 }: {
   entry: BibEntry;
   maxAuthorLimit?: number;
@@ -102,7 +110,10 @@ function PublicationEntry({
   citations?: Record<string, number>;
   scholarUserId?: string;
   badges?: BadgeConfig;
+  /** Site-chrome strings (fallback only — card labels follow the entry language). */
   ui?: PubI18n;
+  /** Both languages, so a card can pick its own. */
+  i18n?: { en: PubI18n; fa: PubI18n };
 }) {
   const [abstractOpen, setAbstractOpen] = useState(false);
   const [bibtexOpen, setBibtexOpen] = useState(false);
@@ -112,7 +123,10 @@ function PublicationEntry({
   const preview = entry.fields.preview ?? '';
   const title = getTitle(entry);
   const url = entryUrl(entry);
-  const authorsRaw = getAuthors(entry);
+  // The publication's OWN language — drives the author list language, direction
+  // and the overflow phrase. Never the site chrome language.
+  const pubLang = entry.fields.lang === 'fa' ? 'fa' : 'en';
+  const authorsRaw = getAuthors(entry, pubLang);
   const authorList = authorsRaw ? authorsRaw.split(', ') : [];
   const venue = getVenue(entry);
   const year = getYear(entry);
@@ -160,8 +174,6 @@ function PublicationEntry({
   const visibleAuthorLinks = maxAuthorLimit ? authorLinks.slice(0, maxAuthorLimit) : authorLinks;
   const hiddenCount = authorLinks.length - visibleAuthorLinks.length;
 
-  const contentColClass = showThumbnails && (abbr || preview) ? 'col-sm-8' : 'col-sm-10';
-
   // Resolve asset paths — use full URL if provided, otherwise prefix with configured dir
   const previewSrc = preview.includes('://') ? preview : `${previewDir}${preview}`;
   const pdfHref = pdfPath.startsWith('http') ? pdfPath : `${pdfDir}${pdfPath}`;
@@ -171,28 +183,37 @@ function PublicationEntry({
 
   const scholarCount = googleScholarId ? citations[googleScholarId] : undefined;
 
-  return (
-    <li>
-      <div className="row">
-        {/* Left column: abbr badge + thumbnail */}
-        {showThumbnails && (abbr || preview) && (
-          <div className="col col-sm-2 abbr">
-            {abbr && <abbr className="badge w-100 rounded">{abbr}</abbr>}
-            {preview && (
-              <img
-                className="preview z-depth-1 rounded"
-                src={previewSrc}
-                alt={preview}
-                loading="lazy"
-              />
-            )}
-          </div>
-        )}
+  // Word the author overflow in the publication's language (English/Persian).
+  const authorSeparator = pubLang === 'fa' ? '، ' : ', ';
+  const moreAuthorsLabel =
+    pubLang === 'fa'
+      ? `و ${faDigits(String(hiddenCount))} نویسندهٔ دیگر`
+      : hiddenCount === 1
+        ? `and ${hiddenCount} more author`
+        : `and ${hiddenCount} more authors`;
 
-        {/* Right column: content */}
-        <div id={entry.key} className={contentColClass}>
+  // Card labels sit INSIDE the entry's zone, so they follow the entry language.
+  // `labels` (site config) and `ui` (site chrome) are fallbacks only.
+  const cardLabels = {
+    abstract: i18n?.[pubLang]?.abstract ?? labels.abstract ?? 'Abs',
+    bibtex: i18n?.[pubLang]?.bibtex ?? labels.bibtex ?? 'Bib',
+    supp: i18n?.[pubLang]?.supp ?? labels.supp ?? 'Supp',
+    details: i18n?.[pubLang]?.details ?? ui?.details ?? 'Details',
+  };
+
+  return (
+    <li lang={pubLang} dir={pubLang === 'fa' ? 'rtl' : 'ltr'}>
+      <div className="pub-entry">
+        {/* Main column: meta row, title, authors, venue, links */}
+        <div id={entry.key} className="pub-main">
+          {/* Meta row — badge + year anchor the top so the card never starts empty */}
+          <div className="pub-meta-row">
+            {abbr && <span className="pub-abbr">{abbr}</span>}
+            {year ? <span className="pub-year">{year}</span> : null}
+          </div>
+
           {/* Title — links to internal detail page when available, otherwise to external URL */}
-          <div className="title">
+          <div className="title" title={title}>
             {detailBase !== undefined ? (
               <a href={`${detailBase}/publications/${entry.key}/`}>{title}</a>
             ) : url ? (
@@ -208,7 +229,7 @@ function PublicationEntry({
           {authorLinks.length > 0 && (
             <div className="author">
               {visibleAuthorLinks.map((al, i) => {
-                const isLast = i === visibleAuthorLinks.length - 1 && hiddenCount === 0;
+                const isLast = i === visibleAuthorLinks.length - 1;
                 const nameEl = al.isSelf ? <em>{al.name}</em> : <>{al.name}</>;
                 return (
                   <span key={i}>
@@ -219,17 +240,16 @@ function PublicationEntry({
                     ) : (
                       nameEl
                     )}
-                    {!isLast && ', '}
+                    {!isLast && authorSeparator}
                   </span>
                 );
               })}
               {hiddenCount > 0 && (
                 <span>
-                  ,{' '}
-                  {(hiddenCount === 1
-                    ? (ui?.moreOne ?? 'and {n} more author')
-                    : (ui?.moreMany ?? 'and {n} more authors')
-                  ).replace('{n}', String(hiddenCount))}
+                  {authorSeparator}
+                  {/* Counted from the entry's own author list, and worded in the
+                      publication's language (English or Persian). */}
+                  <span>{moreAuthorsLabel}</span>
                 </span>
               )}
               {/* Annotation tooltip — info icon with hover text */}
@@ -246,12 +266,10 @@ function PublicationEntry({
             </div>
           )}
 
-          {/* Venue + year + additional_info */}
-          {(venue || year) && (
+          {/* Venue + additional_info (year lives in the meta row above) */}
+          {(venue || additionalInfo) && (
             <div className="periodical">
               {venue && <em>{venue}</em>}
-              {venue && year ? ', ' : ''}
-              {year || ''}
               {additionalInfo && <span style={{ marginLeft: '0.25rem' }}> · {additionalInfo}</span>}
             </div>
           )}
@@ -273,7 +291,7 @@ function PublicationEntry({
                 onClick={() => setAbstractOpen(!abstractOpen)}
                 style={{ cursor: 'pointer', background: 'none' }}
               >
-                {labels.abstract ?? 'Abs'}
+                {cardLabels.abstract}
               </button>
             )}
             {doi && (
@@ -312,7 +330,7 @@ function PublicationEntry({
                 onClick={() => setBibtexOpen(!bibtexOpen)}
                 style={{ cursor: 'pointer', background: 'none' }}
               >
-                {labels.bibtex ?? 'Bib'}
+                {cardLabels.bibtex}
               </button>
             )}
             {entry.fields.html && (
@@ -342,7 +360,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                {labels.supp ?? 'Supp'}
+                {cardLabels.supp}
               </a>
             )}
             {slides && (
@@ -407,7 +425,7 @@ function PublicationEntry({
             )}
             {detailBase !== undefined && (
               <a href={`${detailBase}/publications/${entry.key}/`} className="btn btn-sm z-depth-0">
-                {ui?.details ?? 'Details'}
+                {cardLabels.details}
               </a>
             )}
           </div>
@@ -440,29 +458,42 @@ function PublicationEntry({
               {showInspireHEP && <InspireHEPBadge inspirehepId={inspirehepId} />}
             </div>
           )}
-
-          {/* Award hidden block */}
-          {hasAward && (
-            <div className={`award hidden${awardOpen ? 'open' : ''}`}>
-              <p>{hasAward}</p>
-            </div>
-          )}
-
-          {/* Abstract hidden block */}
-          {abstract && (
-            <div className={`abstract hidden${abstractOpen ? 'open' : ''}`}>
-              <p>{abstract}</p>
-            </div>
-          )}
-
-          {/* BibTeX hidden block — internal fields filtered out */}
-          {bibtex_show && (
-            <div className={`bibtex hidden${bibtexOpen ? 'open' : ''}`}>
-              <pre>{getCleanBibtex(entry)}</pre>
-            </div>
-          )}
         </div>
+
+        {/* Side thumbnail (only when a preview exists — no empty column otherwise) */}
+        {showThumbnails && preview && (
+          <div className="pub-thumb">
+            <img
+              className="preview z-depth-1 rounded"
+              src={previewSrc}
+              alt={preview}
+              loading="lazy"
+            />
+          </div>
+        )}
       </div>
+
+      {/* Expandable boxes — full-width section below the card body, so opening
+          them never moves the buttons or stretches the thumbnail. */}
+      {hasAward && (
+        <div className={['award pub-hidden', awardOpen && 'is-open'].filter(Boolean).join(' ')}>
+          <p>{hasAward}</p>
+        </div>
+      )}
+
+      {abstract && (
+        <div
+          className={['abstract pub-hidden', abstractOpen && 'is-open'].filter(Boolean).join(' ')}
+        >
+          <p>{abstract}</p>
+        </div>
+      )}
+
+      {bibtex_show && (
+        <div className={['bibtex pub-hidden', bibtexOpen && 'is-open'].filter(Boolean).join(' ')}>
+          <pre>{getCleanBibtex(entry)}</pre>
+        </div>
+      )}
     </li>
   );
 }
@@ -484,8 +515,8 @@ export function BibSearch({
   lang = 'en',
 }: Props) {
   const [query, setQuery] = useState('');
-  // Read the applied chrome language at mount: the engine's pre-paint script
-  // sets <html lang> before React hydrates, so the first paint is correct.
+  // UI strings (search box, buttons) follow the site chrome language.
+  // Entry content is English-only data and always renders LTR.
   const [uiLang, setUiLang] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.lang === 'fa'
       ? 'fa'
@@ -508,7 +539,10 @@ export function BibSearch({
   const searchPlaceholder =
     ui?.searchPlaceholder ?? labels.searchPlaceholder ?? 'Search publications\u2026';
   const noResults = ui?.noResults ?? labels.noResults ?? 'No publications match your search.';
-  const showing =
+  // Result-count string. The `pubShowing*` keys let the pre-paint i18n engine
+  // translate it instantly (no English flash while React hydrates).
+  const countKey = entries.length === 1 ? 'pubShowingOne' : 'pubShowingMany';
+  const countTemplate =
     entries.length === 1
       ? (ui?.showingOne ?? 'Showing {filtered} of {total} publication')
       : (ui?.showingMany ?? 'Showing {filtered} of {total} publications');
@@ -537,15 +571,24 @@ export function BibSearch({
 
   const years = useMemo(() => [...byYear.keys()].sort((a, b) => b - a), [byYear]);
 
+  // Must equal the i18n engine output for the same key/vars so hydration
+  // does not overwrite the pre-paint translation (Persian digits included).
+  const rawCount = countTemplate
+    .replace('{filtered}', String(filtered.length))
+    .replace('{total}', String(entries.length));
+  const countText = uiLang === 'fa' ? faDigits(rawCount) : rawCount;
+
   return (
-    <div className="publications" dir={uiLang === 'fa' ? 'rtl' : 'ltr'}>
-      {/* Search bar */}
-      <div style={{ marginBottom: '1.5rem' }}>
+    <div className="publications">
+      {/* Search bar — shared chrome, follows the site language via CSS+engine. */}
+      <div className="pub-search" style={{ marginBottom: '1.5rem' }}>
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={searchPlaceholder}
+          data-i18n-placeholder="pubSearch"
+          data-i18n-aria="pubSearch"
           style={{
             width: '100%',
             padding: '0.5rem 0.75rem',
@@ -559,48 +602,53 @@ export function BibSearch({
           aria-label={searchPlaceholder}
         />
         <p
+          data-i18n={countKey}
+          data-i18n-vars={JSON.stringify({ filtered: filtered.length, total: entries.length })}
           style={{
             marginTop: '0.375rem',
             fontSize: '0.8125rem',
             color: 'var(--global-text-color-light)',
           }}
         >
-          {showing
-            .replace('{filtered}', String(filtered.length))
-            .replace('{total}', String(entries.length))}
+          {countText}
         </p>
       </div>
 
-      {/* Publications grouped by year */}
-      {filtered.length === 0 ? (
-        <p style={{ color: 'var(--global-text-color-light)' }}>{noResults}</p>
-      ) : (
-        years.map((year) => (
-          <div key={year}>
-            <h2 className="year">{year}</h2>
-            <ol className="bibliography">
-              {byYear.get(year)!.map((entry) => (
-                <PublicationEntry
-                  key={entry.key}
-                  entry={entry}
-                  maxAuthorLimit={maxAuthorLimit}
-                  showThumbnails={showThumbnails}
-                  authorLastName={authorLastName}
-                  previewDir={previewDir}
-                  pdfDir={pdfDir}
-                  labels={labels}
-                  detailBase={detailBase}
-                  coauthors={coauthors}
-                  citations={citations}
-                  scholarUserId={scholarUserId}
-                  badges={badges}
-                  ui={ui}
-                />
-              ))}
-            </ol>
-          </div>
-        ))
-      )}
+      {/* Entries — English-only content, always LTR. */}
+      <div className="pub-entries" dir="ltr">
+        {filtered.length === 0 ? (
+          <p style={{ color: 'var(--global-text-color-light)' }} data-i18n="pubNoResults">
+            {noResults}
+          </p>
+        ) : (
+          years.map((year) => (
+            <div key={year}>
+              <h2 className="year">{year}</h2>
+              <ol className="bibliography">
+                {byYear.get(year)!.map((entry) => (
+                  <PublicationEntry
+                    key={entry.key}
+                    entry={entry}
+                    maxAuthorLimit={maxAuthorLimit}
+                    showThumbnails={showThumbnails}
+                    authorLastName={authorLastName}
+                    previewDir={previewDir}
+                    pdfDir={pdfDir}
+                    labels={labels}
+                    detailBase={detailBase}
+                    coauthors={coauthors}
+                    citations={citations}
+                    scholarUserId={scholarUserId}
+                    badges={badges}
+                    ui={ui}
+                    i18n={i18n}
+                  />
+                ))}
+              </ol>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 /**
- * as-folio site configuration
+ * DINA Lab blog — site configuration
  *
- * This file replaces _config.yml from al-folio.
- * Update the values below to personalize your site.
+ * Update the values below to personalize the site.
  * All configuration is fully typed — your editor will catch mistakes.
  */
 
@@ -80,7 +79,6 @@ export const site = {
         nav_blog: 'blog',
         nav_people: 'people',
         nav_publications: 'publications',
-        nav_news: 'news',
         lastUpdated: 'Last updated:',
         legalNotice: 'Legal Notice',
         blogName: 'DINA Blog',
@@ -108,11 +106,6 @@ export const site = {
         notFound: 'Page not found',
         notFoundDesc: "The page you were looking for doesn't exist or has been moved.",
         goHome: 'Go back home',
-        newsTitle: 'news',
-        newsEmpty: 'No announcements yet.',
-        latestPosts: 'latest posts',
-        selectedPubs: 'selected publications',
-        fullPubList: 'Full publication list',
         categoryLabel: 'Category:',
         noCategoryPosts: 'No posts found for this category.',
         brandName: 'DINA Lab',
@@ -130,14 +123,13 @@ export const site = {
         pubNoResults: 'No publications match your search.',
         pubShowingOne: 'Showing {filtered} of {total} publication',
         pubShowingMany: 'Showing {filtered} of {total} publications',
-        pubMoreOne: 'and {n} more author',
-        pubMoreMany: 'and {n} more authors',
         pubDetails: 'Details',
+        pubAbs: 'Abs',
+        pubBib: 'Bib',
+        pubSupp: 'Supp',
+        pubBreadcrumb: 'Publications',
         pubAbstract: 'Abstract',
         pubCitation: 'Citation',
-        statPosts: 'Posts',
-        statMembers: 'Members',
-        statTalks: 'Talks',
       },
       fa: {
         blog: 'وبلاگ',
@@ -169,7 +161,6 @@ export const site = {
         nav_blog: 'وبلاگ',
         nav_people: 'اعضا',
         nav_publications: 'انتشارات',
-        nav_news: 'اخبار',
         lastUpdated: 'آخرین به‌روزرسانی:',
         legalNotice: 'اطلاعات حقوقی',
         blogName: 'بلاگ دینا',
@@ -197,11 +188,6 @@ export const site = {
         notFound: 'صفحه پیدا نشد',
         notFoundDesc: 'صفحه‌ای که دنبالش بودید وجود ندارد یا جابه‌جا شده است.',
         goHome: 'بازگشت به خانه',
-        newsTitle: 'اخبار',
-        newsEmpty: 'هنوز اطلاعیه‌ای نیست.',
-        latestPosts: 'آخرین مطالب',
-        selectedPubs: 'منتخب انتشارات',
-        fullPubList: 'فهرست کامل انتشارات',
         categoryLabel: 'دسته:',
         noCategoryPosts: 'مطلبی در این دسته پیدا نشد.',
         brandName: 'آزمایشگاه دینا',
@@ -219,14 +205,13 @@ export const site = {
         pubNoResults: 'انتشاری مطابق جستجو پیدا نشد.',
         pubShowingOne: 'نمایش {filtered} از {total} انتشار',
         pubShowingMany: 'نمایش {filtered} از {total} انتشار',
-        pubMoreOne: 'و {n} نویسنده دیگر',
-        pubMoreMany: 'و {n} نویسنده دیگر',
         pubDetails: 'جزئیات',
+        pubAbs: 'چکیده',
+        pubBib: 'بیب‌تک',
+        pubSupp: 'پیوست',
+        pubBreadcrumb: 'انتشارات',
         pubAbstract: 'چکیده',
         pubCitation: 'ارجاع',
-        statPosts: 'مطلب',
-        statMembers: 'عضو',
-        statTalks: 'ارائه',
       },
     },
   },
@@ -234,61 +219,27 @@ export const site = {
   // ─── Author ────────────────────────────────────────────────────────────────
 
   author: {
-    /** Full name shown in navbar, about page heading, and footer. */
+    /** Full name shown in navbar, page headings, and footer. */
     name: 'DINA Lab',
 
-    /** Short email address (used in social links). */
+    /** Short email address (used in the homepage Person JSON-LD). */
     email: 'info@dina-lab.example',
 
     /** Path to profile photo. Place image in public/assets/img/. */
     avatar: '/assets/logo/DINA-logo.png',
-
-    /**
-     * Subtitle below your name on the about page.
-     * HTML is supported.
-     */
-    subtitle: `Distributed Infrastructure for NextGen Applications
-      &nbsp;·&nbsp;
-      دینا`,
-
-    /**
-     * Address block below profile photo.
-     * HTML is supported.
-     */
-    moreInfo: `<p>Iran University of Science and Technology</p>
-      <p>Tehran, Iran</p>`,
   },
 
   // ─── Social links ──────────────────────────────────────────────────────────
   //
-  // Supported platforms (set to undefined to hide):
-  //   email, x_username, linkedin_username, github_username, gitlab_username,
-  //   scholar_userid, orcid_id, inspire_id, researchgate_username,
-  //   arxiv_id, youtube_id, instagram_username, mastodon_url,
-  //   bluesky_handle, medium_username, cv_pdf, rss_icon
+  // Only the keys below are consumed (Person JSON-LD + Open Graph tags).
+  // Set to undefined to hide.
 
   socials: {
-    email: 'info@dina-lab.example',
     x_username: undefined as string | undefined,
-    linkedin_username: undefined as string | undefined,
     github_username: 'DINA-Lab-IUST' as string | undefined,
-    gitlab_username: undefined as string | undefined,
     /** Google Scholar user ID — the part after user= in your Scholar URL */
     scholar_userid: undefined as string | undefined,
     orcid_id: undefined as string | undefined,
-    /** Inspire HEP author ID */
-    inspire_id: undefined as string | undefined,
-    researchgate_username: undefined as string | undefined,
-    arxiv_id: undefined as string | undefined,
-    youtube_id: undefined as string | undefined,
-    instagram_username: undefined as string | undefined,
-    mastodon_url: undefined as string | undefined,
-    bluesky_handle: undefined as string | undefined,
-    medium_username: undefined as string | undefined,
-    /** Path to CV PDF in public/assets/pdf/ */
-    cv_pdf: undefined as string | undefined,
-    /** Show RSS icon in social links */
-    rss_icon: false,
   },
 
   // ─── Navigation ────────────────────────────────────────────────────────────
@@ -296,8 +247,6 @@ export const site = {
   navbar: {
     /** Fix navbar to top of viewport. */
     fixed: true,
-    /** Show social icons in navbar (about page only). */
-    socialIcons: false,
     /**
      * Top-level navigation items.
      * Use `{ label, href }` for a plain link.
@@ -309,8 +258,7 @@ export const site = {
       { label: 'blog', href: '/' },
       { label: 'people', href: '/members/' },
       { label: 'publications', href: '/publications/' },
-      { label: 'news', href: '/news/' },
-      { label: 'about', href: '/about/' },
+      { label: 'about', href: 'https://dina-lab-iust.github.io/' },
     ] as NavItem[],
   },
 
@@ -323,7 +271,7 @@ export const site = {
     impressum: undefined as string | undefined,
     /**
      * Footer display mode:
-     * 'sticky'  — always visible at the bottom of the viewport (al-folio default)
+     * 'sticky'  — always visible at the bottom of the viewport (default)
      * 'normal'  — sits at the natural bottom of page content (only visible when scrolled down)
      * 'hidden'  — footer is not rendered at all
      */
@@ -363,29 +311,6 @@ export const site = {
     emptyMessage: 'No posts yet. Check back soon!',
   },
 
-  // ─── About page sections ──────────────────────────────────────────────────
-
-  announcements: {
-    /** Show news/announcements section on the about page. */
-    enabled: true,
-    /** Enable vertical scroll if more than 3 items. */
-    scrollable: true,
-    /** Max news items to show (undefined = show all). */
-    limit: 5 as number | undefined,
-  },
-
-  latestPosts: {
-    /** Show latest blog posts section on the about page. */
-    enabled: true,
-    scrollable: true,
-    limit: 3 as number | undefined,
-  },
-
-  selectedPapers: {
-    /** Show selected publications section on the about page. */
-    enabled: true,
-  },
-
   // ─── Features ─────────────────────────────────────────────────────────────
 
   features: {
@@ -397,11 +322,9 @@ export const site = {
     progressBar: true,
     /** Show back-to-top button. */
     backToTop: true,
-    /** Enable automatic masonry layout for project cards. */
-    masonry: true,
     /** Enable click-to-zoom on images (medium-zoom). */
     mediumZoom: true,
-    /** Show styled CSS tooltips on hover for project card icons and publication annotations.
+    /** Show styled CSS tooltips on hover for publication annotations.
      *  When false, the browser's native title-attribute tooltip is used instead. */
     tooltips: false,
     /** Enable GDPR-compliant cookie consent dialog. */
@@ -409,16 +332,11 @@ export const site = {
     /** Enable newsletter subscription form. */
     newsletter: false,
     /**
-     * Enable video embedding for BibTeX entries.
-     * If false, video links open in a new tab instead.
-     */
-    videoEmbedding: false,
-    /**
      * Enable Astro View Transitions for smooth page-to-page animations.
      * Disable if you prefer full page reloads (e.g. for accessibility reasons).
      */
     viewTransitions: true,
-    /** Show social sharing links (X, LinkedIn, Facebook, email) at the bottom of blog posts. */
+    /** Show social sharing links (X, LinkedIn, Telegram, WhatsApp, Discord, email) at the bottom of blog posts. */
     socialShare: true,
   },
 

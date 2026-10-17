@@ -13,6 +13,7 @@ import {
   getYear,
   parseBibtex,
 } from '@utils/bibtex';
+import { t } from '@utils/i18n';
 import yaml from 'js-yaml';
 
 import citationsRaw from '../../data/citations.yml?raw';
@@ -29,11 +30,22 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 
+// The entry's own language drives the content zone (direction, alignment, font
+// and the author separator) — independent of the site chrome language.
+const pubLang = entry.fields.lang === 'fa' ? 'fa' : 'en';
+const pubDir = pubLang === 'fa' ? 'rtl' : 'ltr';
+const authorSeparator = pubLang === 'fa' ? '، ' : ', ';
+
 const title = getTitle(entry);
+// Latin list — kept for SEO/indexing meta tags.
 const authorsRaw = getAuthors(entry);
+// Display list — Persian when the entry provides `author_fa`.
+const authorsDisplay = getAuthors(entry, pubLang).split(', ');
 const venue = getVenue(entry);
 const year = getYear(entry);
 const yearStr = year > 0 ? String(year) : undefined;
+/** "Venue, Year" — composed here so the template adds no stray whitespace. */
+const venueLine = [venue, yearStr].filter(Boolean).join(pubLang === 'fa' ? '، ' : ', ');
 const abstract = entry.fields.abstract;
 const doi = entry.fields.doi;
 const arxiv = entry.fields.arxiv;
@@ -73,7 +85,7 @@ const posterHref = poster ? (poster.startsWith('http') ? poster : `${pdfDir}${po
 // Load co-author links
 const coauthors = (yaml.load(coauthorsRaw) ?? {}) as CoauthorMap;
 const authorLastName = site.publications.authorLastName ?? site.author.name.split(' ').pop() ?? '';
-const authorLinks = linkAuthors(authorsRaw.split(', '), coauthors, authorLastName);
+const authorLinks = linkAuthors(authorsDisplay, coauthors, authorLastName);
 
 // Google Scholar badge — two variants for light/dark theme
 const citations = (yaml.load(citationsRaw) ?? {}) as Record<string, number>;
@@ -142,7 +154,7 @@ const breadcrumbLd = {
 };
 ---
 
-<Page title={title} description={abstract ?? `${title} by ${authorsRaw}`}>
+<Page title={title} description={abstract ?? `${title} by ${authorsRaw}`} lang="en" dir="ltr">
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />
@@ -169,9 +181,13 @@ const breadcrumbLd = {
     {showDimensions && <script is:inline async src="https://badge.dimensions.ai/badge.js" />}
   </Fragment>
 
-  <div class="post">
+  <div class="post pub-detail" lang={pubLang} dir={pubDir}>
     <nav aria-label="Breadcrumb" class="breadcrumb-nav">
-      <a href={`${site.base}/publications/`} class="breadcrumb-link">← Publications</a>
+      <a href={`${site.base}/publications/`} class="breadcrumb-link">
+        <span class="back-arrow" aria-hidden="true">←</span>{' '}
+        {/* Labels follow THIS publication's language, never the site chrome. */}
+        <span>{t(pubLang, 'pubBreadcrumb')}</span>
+      </a>
     </nav>
 
     <header class="post-header">
@@ -191,20 +207,11 @@ const breadcrumbLd = {
               ) : (
                 al.name
               )}
-              {i < authorLinks.length - 1 && ', '}
+              {i < authorLinks.length - 1 && authorSeparator}
             </>
           ))
         }
-        {
-          (venue || yearStr) && (
-            <em>
-              {' '}
-              &middot; {venue}
-              {venue && yearStr ? ', ' : ''}
-              {yearStr}
-            </em>
-          )
-        }
+        {venueLine && <em> &middot; {venueLine}</em>}
         {additionalInfo && <span class="additional-info"> · {additionalInfo}</span>}
       </p>
 
@@ -219,7 +226,8 @@ const breadcrumbLd = {
       }
     </header>
 
-    <article>
+    {/* Publication content follows the ENTRY language; code stays LTR via CSS. */}
+    <article dir={pubDir}>
       <!-- Action buttons: full set matching the index page -->
       <div class="pub-actions">
         {
@@ -402,14 +410,14 @@ const breadcrumbLd = {
       {
         abstract && (
           <section class="pub-section">
-            <h2 data-i18n="pubAbstract">Abstract</h2>
+            <h2>{t(pubLang, 'pubAbstract')}</h2>
             <p>{abstract}</p>
           </section>
         )
       }
 
       <section class="pub-section">
-        <h2 data-i18n="pubCitation">Citation</h2>
+        <h2>{t(pubLang, 'pubCitation')}</h2>
         <pre class="bibtex-block" id="citation-block"><code>{bibtexBlock}</code></pre>
       </section>
     </article>
@@ -428,7 +436,11 @@ const breadcrumbLd = {
     btn.addEventListener('click', async () => {
       const code = pre.querySelector('code');
       if (!code) return;
-      await navigator.clipboard.writeText(code.innerText);
+      try {
+        await navigator.clipboard.writeText(code.innerText);
+      } catch {
+        return;
+      }
       btn.textContent = 'copied!';
       setTimeout(() => {
         btn.textContent = 'copy';
@@ -537,5 +549,8 @@ const breadcrumbLd = {
     overflow-x: auto;
     font-size: 0.8rem;
     white-space: pre;
+    /* Code/BibTeX is always LTR + left, even inside a Persian entry. */
+    direction: ltr;
+    text-align: left;
   }
 </style>

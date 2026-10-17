@@ -1233,17 +1233,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/inter@npm:^5.3.0":
-  version: 5.3.0
-  resolution: "@fontsource/inter@npm:5.3.0"
-  checksum: 10c0/568601c10c83601c23005f8cd7434499df6e007eaa22c4dabbb1dcae327cc8e4a148ece8d4a4edaa8bafc5d2371ea97a37d1cc91ffbed77a43e2d8c15a6e831b
-  languageName: node
-  linkType: hard
-
 "@fontsource/jetbrains-mono@npm:^5.3.0":
   version: 5.3.0
   resolution: "@fontsource/jetbrains-mono@npm:5.3.0"
   checksum: 10c0/1351b2350e893f5da39559ed90ff0e5e60bcc876b1f40531ad081ad4bf2f3cda3fa9e8940364aef5a7430ae3140685c9cd4819c36d8ad62bcd3fa37e3cc66b1d
+  languageName: node
+  linkType: hard
+
+"@fontsource/manrope@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/manrope@npm:5.3.0"
+  checksum: 10c0/e0e16f37b953ae5cb164d7dbea3c8a3ae30d0ede291c9f774ad5b3266abeb4b9b5efec11148afe90b6a9cd8e3d141f2e02d70a813dfb524f1d7577ab393f3528
+  languageName: node
+  linkType: hard
+
+"@fontsource/space-grotesk@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/space-grotesk@npm:5.3.0"
+  checksum: 10c0/6804603d339edb99e50419e951c153d6ab0c175cd1a3c5044341c5efa261dcae63aec2288d5dd4d698d82b44c9a23a34f065881055b08887de08df2769c9791a
   languageName: node
   linkType: hard
 
@@ -3552,8 +3559,9 @@ __metadata:
     "@commitlint/cli": "npm:^21.0.0"
     "@commitlint/config-conventional": "npm:^21.0.0"
     "@eslint/js": "npm:^10.0.0"
-    "@fontsource/inter": "npm:^5.3.0"
     "@fontsource/jetbrains-mono": "npm:^5.3.0"
+    "@fontsource/manrope": "npm:^5.3.0"
+    "@fontsource/space-grotesk": "npm:^5.3.0"
     "@fontsource/vazirmatn": "npm:^5.3.0"
     "@iconify-json/academicons": "npm:^1.2.4"
     "@iconify-json/fa-brands": "npm:^1.2.2"

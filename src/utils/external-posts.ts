@@ -1,5 +1,5 @@
 /**
- * External posts loader for as-folio.
+ * External posts loader.
  *
  * Fetches external post sources defined in `site.blog.externalSources` at build time.
  * Supports both RSS feed URLs and manual post lists.
@@ -123,7 +123,7 @@ export async function fetchExternalPosts(): Promise<ExternalPost[]> {
       try {
         const res = await fetch(src.rssUrl, {
           signal: AbortSignal.timeout(8000),
-          headers: { 'User-Agent': 'as-folio/1.0 RSS reader' },
+          headers: { 'User-Agent': 'dina-lab-blog/1.0 RSS reader' },
         });
         if (res.ok) {
           const xml = await res.text();
@@ -132,7 +132,7 @@ export async function fetchExternalPosts(): Promise<ExternalPost[]> {
         }
       } catch {
         // Don't fail the build for unreachable RSS feeds
-        console.warn(`[as-folio] Could not fetch external posts from: ${src.rssUrl}`);
+        console.warn(`[dina-lab] Could not fetch external posts from: ${src.rssUrl}`);
       }
     }
   }

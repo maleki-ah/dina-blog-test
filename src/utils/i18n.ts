@@ -2,8 +2,6 @@ import { site } from '@config/site';
 
 export type SupportedLang = 'en' | 'fa';
 
-export const SUPPORTED_LANGS: SupportedLang[] = [...site.i18n.supported];
-
 /** True for Persian content. */
 export function isRtl(lang: string | undefined): boolean {
   return lang === 'fa';
@@ -53,11 +51,6 @@ export function faDigits(value: string | number): string {
 /** Format a count for the given language (Persian digits for fa). */
 export function formatCount(n: number, lang: string | undefined): string {
   return normalizeLang(lang) === 'fa' ? faDigits(n) : String(n);
-}
-
-/** Locale string for date formatting. */
-export function localeForLang(lang: string | undefined): string {
-  return normalizeLang(lang) === 'fa' ? 'fa-IR' : 'en-US';
 }
 
 /** Format a date in the appropriate locale. */
