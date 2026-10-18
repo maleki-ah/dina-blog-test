@@ -112,7 +112,12 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
 <script>
   import 'ninja-keys';
 
-  import { buildSearchActions, installLiteralFilter } from '@utils/search-actions';
+  import {
+    buildSearchActions,
+    installLiteralFilter,
+    matchRank,
+    pagePath,
+  } from '@utils/search-actions';
 
   type RawItem = { id: string; title: string; section: string; href: string; keywords?: string };
 
@@ -125,6 +130,9 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
       // so a nav/content item whose title does not spell the query out (it was
       // matched through its keywords) must keep its keywords to stay listed.
       keywords: item.keywords,
+      // The page this entry opens, so a Pagefind hit for the same page can be
+      // dropped instead of listed twice (see `pagePath`).
+      path: pagePath(item.href),
       handler: () => {
         window.location.href = item.href;
       },
@@ -211,22 +219,81 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
       return allTags
         .filter((tag) => tag.toLowerCase().includes(needle))
         .slice(0, 5)
-        .map((tag) => ({
-          id: `tag-${tag}`,
-          title: `#${tag}`,
-          section,
-          handler: () => {
-            window.location.href = `${pagefindBase}/posts/tag/${encodeURIComponent(tag)}/`;
-          },
-        }));
+        .map((tag) => {
+          const href = `${pagefindBase}/posts/tag/${encodeURIComponent(tag)}/`;
+          return {
+            id: `tag-${tag}`,
+            title: `#${tag}`,
+            section,
+            path: pagePath(href),
+            handler: () => {
+              window.location.href = href;
+            },
+          };
+        });
     }
 
     const localizeAll = () => localizeItems([...navItems, ...contentItems]);
     const splitAt = navItems.length;
     const navData = localizeAll().slice(0, splitAt).map(buildAction);
     const contentData = localizeAll().slice(splitAt).map(buildAction);
-    const defaultData = [...navData, ...contentData];
 
+    // Result ladder — highest intent first (see CUSTOMIZE.md §13):
+    //   1. `#tag` shortcuts (built by `matchTags`)
+    //   2. post / publication titles      (tier 0)
+    //   3. member names                    (tier 1)
+    //   4. member roles and focuses        (tier 2)
+    //   5. the same pages reached through their metadata — tags, categories,
+    //      authors, venue, year            (tier 3)
+    //   6. Pagefind full-text body hits    (added by the caller)
+    // Each tier is sorted by match quality, capped, and the tiers share a
+    // budget so no single one can fill the palette.
+    const TIER_CAPS = [3, 3, 4, 3];
+    const LOCAL_BUDGET = 8;
+
+    function localMatches(query: string, rawQuery: string) {
+      type Row = { item: RawItem; action: ReturnType<typeof buildAction>; rank: number };
+      const tiers: Row[][] = [[], [], [], []];
+
+      contentItems.forEach((item, index) => {
+        const titleRank = matchRank(query, item.title);
+        const metadataRank = matchRank(query, item.keywords ?? '');
+        const isPerson = item.section === 'People';
+        if (titleRank !== null) {
+          tiers[isPerson ? 1 : 0].push({ item, action: contentData[index], rank: titleRank });
+        } else if (metadataRank !== null) {
+          tiers[isPerson ? 2 : 3].push({ item, action: contentData[index], rank: metadataRank });
+        }
+      });
+
+      const picked: Row[] = [];
+      tiers.forEach((tier, index) => {
+        tier.sort((a, b) => a.rank - b.rank);
+        tier.slice(0, TIER_CAPS[index]).forEach((row) => {
+          if (picked.length < LOCAL_BUDGET) picked.push(row);
+        });
+      });
+
+      const nav = navItems
+        .map((item, index) => ({ action: navData[index], rank: matchRank(query, item.title) }))
+        .filter(
+          (row): row is { action: ReturnType<typeof buildAction>; rank: number } =>
+            row.rank !== null,
+        )
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, 3)
+        .map(({ action }) => ({ ...action, keywords: rawQuery }));
+
+      return [
+        ...nav,
+        // `keywords` carries the typed text so ninja-keys' own filter keeps an
+        // entry whose words are only present in another order (`احمدی علی`).
+        ...picked.map(({ item, action }) => ({
+          ...action,
+          keywords: `${rawQuery} ${item.keywords ?? ''}`.trim(),
+        })),
+      ];
+    }
     nk.data = navData; // show nav items while idle
     applySearchLocale();
 
@@ -278,32 +345,31 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
       }
 
       // Tag shortcuts first: `#tag` or plain text matching a tag jumps
-      // straight to the tag archive (works with Pagefind and fallback).
+      // straight to the tag archive.
       const tagActions = matchTags(query);
+      const localRows = localMatches(query, raw);
 
-      // Try Pagefind first (full-text, available after yarn build). The actions
-      // are built in `search-actions.ts`, which keeps ninja-keys' own
-      // title/keyword filter from dropping body-only hits — without the raw
-      // query in `keywords` those hits rendered as an empty list.
+      // A local entry and a Pagefind hit can describe the same page with
+      // different URLs (`/members/#slug` vs `/members/`); the first one wins,
+      // so the entry that carries the exact title and deep link is kept.
+      const seenPaths = new Set([...tagActions, ...localRows].map((action) => action.path));
+
+      // Pagefind adds the full-text hits — the words that only live in a page
+      // body. Its `keywords` carry the raw query so ninja-keys' own
+      // title/keyword filter cannot hide them again (see `search-actions.ts`).
+      let pagefindActions: ReturnType<typeof buildSearchActions> = [];
       const pf = await loadPagefind();
       if (pf) {
         const response = await pf.search(query);
         const hits = await Promise.all(response.results.slice(0, 10).map((r: any) => r.data()));
-        const actions = buildSearchActions(hits, raw, dict().searchResults ?? 'Search Results');
-        if (actions.length > 0) {
-          nk.data = [...tagActions, ...actions];
-          return;
-        }
+        pagefindActions = buildSearchActions(
+          hits,
+          raw,
+          dict().searchResults ?? 'Search Results',
+        ).filter((action) => !seenPaths.has(action.path));
       }
 
-      // Fallback: filter pre-built title/keyword index (works in dev mode too)
-      const filtered = defaultData.filter((item) => {
-        const raw =
-          contentItems.find((c) => c.id === item.id) ?? navItems.find((n) => n.id === item.id);
-        const haystack = `${item.title} ${raw?.keywords ?? ''}`.toLowerCase();
-        return haystack.includes(query);
-      });
-      const combined = [...tagActions, ...filtered];
+      const combined = [...tagActions, ...localRows, ...pagefindActions];
       nk.data = combined.length > 0 ? combined : navData;
     });
   }

@@ -735,6 +735,16 @@ Two build-time decisions keep the palette correct on this bilingual site:
 
 - **One index for both languages.** The build runs `pagefind --site dist --force-language en`, so every page (Persian included) lands in a single index. The site's language switch only swaps the *chrome* — posts keep their own language — so a visitor browsing in Persian must still be able to search the English posts. With per-language indexes Pagefind would query the `fa` index (three pages) and return almost nothing.
 - **`keywords` on every action.** `ninja-keys` re-filters whatever the palette is handed, matching the typed text against `title` and `keywords` only. Full-text hits are usually found in the page *body*, so `src/utils/search-actions.ts` copies the raw query (plus the highlighted excerpt) into `keywords`; without it every hit rendered as an empty list. The same helper escapes the copy `ninja-keys` compiles into a `RegExp`, so a query such as `c++` no longer throws inside its render.
+- **Merged with the build-time index, ranked by intent.** The palette carries a client-side index (nav, posts, members, publications) with exact titles and keywords, and Pagefind adds the full-text hits. In dev only the first list exists — Pagefind needs a build — and it matched everything; in production Pagefind used to *replace* it, so a query returned just its ten highest-ranked pages, where the archives (which repeat a post's text on every listing) outrank the page itself and members/publications fell off the end of the list. Results are now merged and ordered by what the visitor most likely meant:
+
+  1. `#tag` shortcuts,
+  2. post and publication titles,
+  3. member names,
+  4. member roles and research focuses,
+  5. the same pages reached through other metadata (tags, categories, authors, venue, year),
+  6. Pagefind's full-text body hits.
+
+  Within a tier the best match comes first — the whole text, then a heading prefix, then all words in any order (`matchRank`) — and duplicates are dropped by page (`pagePath`), so the member's own `/members/#ali-ahmadi` wins over the generic `/members/` hit. `matchesAllTokens` gives the local side Pagefind's AND semantics while ignoring word order, so `احمدی علی` still finds him. `TIER_CAPS` and `LOCAL_BUDGET` in `SearchTrigger.astro` stop a broad query from turning into one long list.
 
 ---
 

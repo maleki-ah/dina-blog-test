@@ -4,7 +4,11 @@ import {
   buildSearchActions,
   escapeSearchQuery,
   installLiteralFilter,
+  matchesAllTokens,
+  matchRank,
+  pagePath,
   plainExcerpt,
+  searchTokens,
   unescapeSearchQuery,
 } from './search-actions';
 
@@ -16,6 +20,84 @@ function ninjaKeysKeeps(action: { title: string; keywords?: string }, query: str
   const filter = new RegExp(query, 'gi');
   return Boolean(action.title.match(filter)) || Boolean(action.keywords?.match(filter));
 }
+
+describe('searchTokens / matchesAllTokens', () => {
+  it('treats hyphens, underscores and dots as word separators', () => {
+    expect(searchTokens('federated-learning')).toEqual(['federated', 'learning']);
+    expect(matchesAllTokens('federated learning', 'federated-learning experiments')).toBe(true);
+    expect(matchesAllTokens('federated learning', 'federated_learning')).toBe(true);
+    expect(matchesAllTokens('ahmadi', 'Ali Ahmadi · علی احمدی')).toBe(true);
+  });
+
+  it('ignores word order, like Pagefind', () => {
+    expect(matchesAllTokens('احمدی علی', 'علی احمدی · Ali Ahmadi')).toBe(true);
+    expect(matchesAllTokens('learning federated', 'Federated Learning')).toBe(true);
+  });
+
+  it('requires every token', () => {
+    expect(matchesAllTokens('علی رضایی', 'علی احمدی · Ali Ahmadi')).toBe(false);
+    expect(matchesAllTokens('ahmadi maleki', 'Ali Ahmadi')).toBe(false);
+  });
+
+  it('matches whole words only', () => {
+    expect(matchesAllTokens('ali', 'Ali Ahmadi')).toBe(true);
+    expect(matchesAllTokens('li', 'Ali Ahmadi')).toBe(false);
+    expect(matchesAllTokens('احمد', 'علی احمدی')).toBe(false);
+  });
+
+  it('rejects an empty query', () => {
+    expect(matchesAllTokens('   ', 'anything')).toBe(false);
+    expect(searchTokens(undefined as unknown as string)).toEqual([]);
+  });
+});
+
+describe('matchRank', () => {
+  it('ranks an exact heading above a prefix and a scattered match', () => {
+    expect(matchRank('edge log', 'Edge Log')).toBe(0);
+    expect(matchRank('edge log', 'Edge Log: An LLM-Assisted Framework')).toBe(1);
+    expect(matchRank('edge log', 'Log analysis at the edge')).toBe(2);
+  });
+
+  it('ignores case, hyphens and word order', () => {
+    expect(matchRank('MAB-RAFD', 'mab rafd: personalized federated')).toBe(1);
+    // Reversed words still match, but no longer look like a heading prefix.
+    expect(matchRank('log edge', 'Edge Log')).toBe(2);
+  });
+
+  it('returns null when a token is missing', () => {
+    expect(matchRank('edge log', 'Edge computing')).toBeNull();
+    expect(matchRank('', 'Edge Log')).toBeNull();
+  });
+
+  it('ranks a person whose name matches above one matched by focus', () => {
+    expect(matchRank('علی احمدی', 'Ali Ahmadi · علی احمدی')).toBe(2);
+    expect(matchRank('علی احمدی', 'Core Lead · سرپرست هسته')).toBeNull();
+  });
+});
+
+describe('pagePath', () => {
+  it('strips fragments, queries and trailing slashes', () => {
+    expect(pagePath('/dina-blog-test/members/#ali-ahmadi')).toBe('/dina-blog-test/members');
+    expect(pagePath('/dina-blog-test/members/')).toBe('/dina-blog-test/members');
+    expect(pagePath('/dina-blog-test/posts/?page=2')).toBe('/dina-blog-test/posts');
+  });
+
+  it('reduces an absolute hit url to its path', () => {
+    expect(pagePath('https://maleki-ah.github.io/dina-blog-test/members/')).toBe(
+      '/dina-blog-test/members',
+    );
+  });
+
+  it('decodes the path so encoded and literal tags match', () => {
+    expect(pagePath('/dina-blog-test/posts/tag/%DB%8C%D8%A7%D8%AF%DA%AF%DB%8C%D8%B1%DB%8C/')).toBe(
+      pagePath('/dina-blog-test/posts/tag/یادگیری/'),
+    );
+  });
+
+  it('keeps the site root distinguishable', () => {
+    expect(pagePath('https://example.com/blog/')).toBe('/blog');
+  });
+});
 
 describe('plainExcerpt', () => {
   it('strips the highlight markup Pagefind adds', () => {

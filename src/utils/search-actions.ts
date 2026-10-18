@@ -24,6 +24,8 @@ export type SearchAction = {
   title: string;
   section: string;
   keywords: string;
+  /** The page the entry opens — used to drop duplicate Pagefind hits. */
+  path: string;
   handler: () => void;
 };
 
@@ -74,6 +76,67 @@ export function installLiteralFilter(el: { _search?: string }): LiteralFilter {
   };
 }
 
+/**
+ * Splits text into lowercase word tokens, so `federated-learning`,
+ * `federated_learning` and `federated learning` compare equal. Persian letters
+ * count as word characters; ZWNJ, hyphens and punctuation separate words.
+ */
+export function searchTokens(text: string): string[] {
+  return String(text ?? '')
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+}
+
+/**
+ * True when every token of `query` appears in `haystack`, in any order — the
+ * AND semantics Pagefind uses, so `احمدی علی` still finds `علی احمدی`.
+ */
+export function matchesAllTokens(query: string, haystack: string): boolean {
+  const tokens = searchTokens(query);
+  if (tokens.length === 0) return false;
+  const words = ` ${searchTokens(haystack).join(' ')} `;
+  return tokens.every((token) => words.includes(` ${token} `));
+}
+
+/**
+ * The page a URL belongs to: no query, no fragment, no trailing slash, decoded.
+ * A local palette entry and a Pagefind hit can describe one page through
+ * different URLs (`/members/#ali-ahmadi` vs `/members/`), so both are compared
+ * through this key instead of the raw URL.
+ */
+export function pagePath(url: string): string {
+  const clean = String(url ?? '')
+    .split('#')[0]
+    .split('?')[0]
+    .replace(/\/+$/, '');
+  const path = (() => {
+    try {
+      return new URL(clean).pathname;
+    } catch {
+      return clean;
+    }
+  })();
+  try {
+    return decodeURI(path).replace(/\/+$/, '');
+  } catch {
+    return path.replace(/\/+$/, '');
+  }
+}
+
+/**
+ * How directly `text` answers `query`: `0` the query is the whole text, `1` the
+ * text starts with the query, `2` it merely contains every query token (any
+ * order), `null` no match. The palette uses it to order its result tiers.
+ */
+export function matchRank(query: string, text: string): number | null {
+  if (!matchesAllTokens(query, text)) return null;
+  const needle = searchTokens(query).join(' ');
+  const haystack = searchTokens(text).join(' ');
+  if (haystack === needle) return 0;
+  return haystack.startsWith(`${needle} `) ? 1 : 2;
+}
+
 /** Pagefind marks the matched terms with `<mark>` tags inside the excerpt. */
 export function plainExcerpt(excerpt = ''): string {
   return excerpt
@@ -93,6 +156,7 @@ export function buildSearchActions(
     title: hit.meta?.title || hit.url,
     section,
     keywords: `${rawQuery} ${plainExcerpt(hit.excerpt)}`.trim(),
+    path: pagePath(hit.url),
     handler: () => {
       window.location.href = hit.url;
     },

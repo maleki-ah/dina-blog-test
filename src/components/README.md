@@ -64,8 +64,8 @@ content-authoring toolkit: import them from an `.mdx` post when you need them.
 
 | Component           | Purpose                                                                |
 | ------------------- | ---------------------------------------------------------------------- |
-| `SearchTrigger.astro` | ⌘K button + Pagefind palette. Supports tag filtering (`#tag`) and deep-links people to `/members/#<slug>`. |
-| `@utils/search-actions` | Turns Pagefind hits into palette actions (raw query in `keywords`) and keeps `ninja-keys`' own filter from hiding body-only matches or throwing on queries like `c++`. |
+| `SearchTrigger.astro` | ⌘K button + Pagefind palette. Ranks tags → titles → member names → member focuses → other metadata → Pagefind full-text hits, and deep-links members to `/members/#<slug>`. |
+| `@utils/search-actions` | Turns Pagefind hits into palette actions (raw query in `keywords`), keeps `ninja-keys`' own filter from hiding body-only matches or throwing on queries like `c++`, and exposes `matchesAllTokens` / `matchRank` / `pagePath` for ranking and de-duplicating results. |
 
 ## Publications (`src/components/publications/`)
 
