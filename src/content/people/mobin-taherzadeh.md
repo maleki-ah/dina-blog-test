@@ -11,6 +11,6 @@ linkedin: https://www.linkedin.com/in/mobin-taherzadeh-a7ba801bb/
 focus:
   - Software
   - LLM
-importance: 8
+importance: 7
 group: current
 ---

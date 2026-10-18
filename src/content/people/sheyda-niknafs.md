@@ -11,6 +11,6 @@ linkedin: https://www.linkedin.com/in/sheyda-niknafs/
 focus:
   - Edge Computing
   - Distributed Systems
-importance: 4
+importance: 9
 group: current
 ---

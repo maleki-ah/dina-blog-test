@@ -725,6 +725,11 @@ features: {
 
 The search index is rebuilt on every `yarn build` run.
 
+Two build-time decisions keep the palette correct on this bilingual site:
+
+- **One index for both languages.** The build runs `pagefind --site dist --force-language en`, so every page (Persian included) lands in a single index. The site's language switch only swaps the *chrome* — posts keep their own language — so a visitor browsing in Persian must still be able to search the English posts. With per-language indexes Pagefind would query the `fa` index (three pages) and return almost nothing.
+- **`keywords` on every action.** `ninja-keys` re-filters whatever the palette is handed, matching the typed text against `title` and `keywords` only. Full-text hits are usually found in the page *body*, so `src/utils/search-actions.ts` copies the raw query (plus the highlighted excerpt) into `keywords`; without it every hit rendered as an empty list. The same helper escapes the copy `ninja-keys` compiles into a `RegExp`, so a query such as `c++` no longer throws inside its render.
+
 ---
 
 ## 14. Deployment base path

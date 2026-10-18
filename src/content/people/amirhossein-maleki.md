@@ -12,6 +12,6 @@ focus:
   - Edge Computing
   - Software
   - Cloud
-importance: 11
+importance: 4
 group: current
 ---

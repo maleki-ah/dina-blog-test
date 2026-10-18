@@ -11,6 +11,6 @@ linkedin: https://www.linkedin.com/in/asma-rashidian/
 focus:
   - Edge Computing
   - LLM
-importance: 9
+importance: 11
 group: current
 ---

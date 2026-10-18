@@ -112,6 +112,8 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
 <script>
   import 'ninja-keys';
 
+  import { buildSearchActions, installLiteralFilter } from '@utils/search-actions';
+
   type RawItem = { id: string; title: string; section: string; href: string; keywords?: string };
 
   function buildAction(item: RawItem) {
@@ -119,6 +121,10 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
       id: item.id,
       title: item.title,
       section: item.section,
+      // ninja-keys only matches `title` and `keywords` when the visitor types,
+      // so a nav/content item whose title does not spell the query out (it was
+      // matched through its keywords) must keep its keywords to stay listed.
+      keywords: item.keywords,
       handler: () => {
         window.location.href = item.href;
       },
@@ -189,6 +195,7 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
     if (!nk) return;
 
     const el = nk as HTMLElement;
+    const literalFilter = installLiteralFilter(nk);
     const navItems: RawItem[] = JSON.parse(el.dataset.navItems ?? '[]');
     const contentItems: RawItem[] = JSON.parse(el.dataset.contentItems ?? '[]');
     const pagefindBase = el.dataset.pagefindBase ?? '';
@@ -260,7 +267,10 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
     }
 
     nk.addEventListener('change', async (e: CustomEvent) => {
-      const query = (e.detail?.search ?? '').trim().toLowerCase();
+      // ninja-keys filters with an escaped copy of the typed text (see
+      // `installLiteralFilter`), so search the text the visitor actually typed.
+      const raw = literalFilter.query(e.detail?.search ?? '');
+      const query = raw.trim().toLowerCase();
 
       if (!query) {
         nk.data = navData;
@@ -271,25 +281,17 @@ const allTags = [...new Set(rawPosts.flatMap((p) => p.data.tags ?? []))].sort();
       // straight to the tag archive (works with Pagefind and fallback).
       const tagActions = matchTags(query);
 
-      // Try Pagefind first (full-text, available after yarn build)
+      // Try Pagefind first (full-text, available after yarn build). The actions
+      // are built in `search-actions.ts`, which keeps ninja-keys' own
+      // title/keyword filter from dropping body-only hits — without the raw
+      // query in `keywords` those hits rendered as an empty list.
       const pf = await loadPagefind();
       if (pf) {
         const response = await pf.search(query);
-        const results = await Promise.all(response.results.slice(0, 10).map((r: any) => r.data()));
-        if (results.length > 0) {
-          const resultsSection = dict().searchResults ?? 'Search Results';
-          nk.data = [
-            ...tagActions,
-            ...results.map((item: any) => ({
-              id: item.url,
-              title: item.meta?.title || item.url,
-              section: resultsSection,
-              description: item.excerpt?.replace(/<[^>]*>/g, '') ?? '',
-              handler: () => {
-                window.location.href = item.url;
-              },
-            })),
-          ];
+        const hits = await Promise.all(response.results.slice(0, 10).map((r: any) => r.data()));
+        const actions = buildSearchActions(hits, raw, dict().searchResults ?? 'Search Results');
+        if (actions.length > 0) {
+          nk.data = [...tagActions, ...actions];
           return;
         }
       }

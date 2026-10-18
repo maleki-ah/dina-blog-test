@@ -44,7 +44,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "prebuild": "node --strip-types scripts/update-citations.ts",
-    "build": "astro build --timings && pagefind --site dist",
+    "build": "astro build --timings && pagefind --site dist --force-language en",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
