@@ -244,8 +244,9 @@ they render as if the site were in their own language:
 
 ### Responsive density (mobile-only adjustments)
 
-Two rules exist purely to keep a phone screen free of dead space. Both are
-scoped below the desktop/tablet layout and change nothing from 640px up:
+Three rules exist purely to keep a phone screen free of dead space or awkward
+edges. All are scoped below the desktop/tablet layout and change nothing from
+640px up:
 
 - **Member cards** (`global.css`): the reserved name / chip-row heights that
   keep a desktop grid row perfectly uniform are dropped below 640px (the grid
@@ -255,6 +256,11 @@ scoped below the desktop/tablet layout and change nothing from 640px up:
 - **Publication cards**: when a card with a `preview` image stacks at ≤640px,
   the image is capped at 280px and centred (`align-self: center`) instead of
   hugging the start edge.
+- **Post cards** (`blog/PostCard.astro`): below 576px the row stacks, so the
+  thumbnail's dissolve flips from the inline edge (`to right` / `to left`, which
+  follows the post's own reading direction beside the title) to the block edge
+  (`to bottom`). Both directions share the same stop (`black 55%`); the fade now
+  ends exactly at the card edge and melts into the body below.
 
 ### Cross-references between posts
 

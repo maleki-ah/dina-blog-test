@@ -230,5 +230,13 @@ const year = d.getFullYear();
       flex-basis: auto;
       min-height: 150px;
     }
+
+    /* Stacked layout: the visual now sits above the text, so dissolve its
+       bottom edge — the inline-edge fade only makes sense beside the title. */
+    .post-visual,
+    [dir='rtl'] .post-visual {
+      -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    }
   }
 </style>
